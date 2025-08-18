@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mini Chat (Senaryolu)</title>
+<title>Mini Chat — Senaryolu</title>
 <style>
-  :root{--bg:#0f172a;--panel:#0b1220;--ink:#e2e8f0;--muted:#94a3b8;--accent:#60a5fa;--me:#1f2937;--bot:#0b1220;--radius:14px}
+  :root{--bg:#0f172a;--panel:#0b1220;--ink:#e2e8f0;--muted:#94a3b8;--accent:#60a5fa;--radius:14px}
   *{box-sizing:border-box} html,body{margin:0;height:100%;background:linear-gradient(180deg,#0b1220,#111827)}
   body{font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif;color:var(--ink);display:grid;place-items:center}
   .app{width:min(900px,92vw);height:min(84vh,780px);display:grid;grid-template-rows:auto 1fr auto;gap:12px}
@@ -14,22 +14,20 @@
   .chat{overflow:auto;padding:16px;border:1px solid #1f2937;border-radius:var(--radius);background:rgba(255,255,255,.03)}
   .msg{display:flex;gap:10px;margin:10px 0;align-items:flex-start}
   .msg .bubble{max-width:75%;padding:10px 12px;border-radius:12px;border:1px solid #1f2937;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-  .bot .bubble{background:var(--bot)} .me{justify-content:flex-end} .me .bubble{background:#111827}
+  .bot .bubble{background:#0b1220} .me{justify-content:flex-end} .me .bubble{background:#111827}
   .bubble p{margin:0;white-space:pre-wrap}
   .input{display:flex;gap:10px}
   .input input{flex:1;padding:12px;border-radius:12px;border:1px solid #1f2937;background:#0b1220;color:var(--ink);outline:none}
   .input button{padding:12px 14px;border-radius:12px;border:1px solid #1f2937;background:#111827;color:var(--ink);cursor:pointer}
   .input button:hover{background:#0f172a}
-  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-  .chip{border:1px solid #1f2937;background:#0f172a;color:var(--muted);padding:6px 10px;border-radius:999px;cursor:pointer}
-  .pill{display:inline-block;background:#0f172a;border:1px solid #1f2937;color:#9ca3af;padding:2px 8px;border-radius:999px;margin-left:6px}
-  a{color:#93c5fd}
+  .hint{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+  .error{color:#fecaca}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="head">
-    <h1>Mini Chat</h1><small>— Senaryolu, cevapları sen belirlersin</small>
+    <h1>Mini Chat</h1><small>— 3 soru, finalde özet</small>
   </div>
 
   <div id="chat" class="chat"></div>
@@ -39,115 +37,90 @@
       <input id="text" type="text" placeholder="Yanıt yaz ve Enter’a bas…" autocomplete="off">
       <button id="send">Gönder</button>
     </div>
-    <div id="chips" class="chips"></div>
+    <small id="hint" class="hint"></small>
   </div>
 </div>
 
 <script>
-/* ========= 1) AKIŞI BURADA TANIMLA (sorular) =========
-   Her adım bir soru sorar, kullanıcının cevabını `answers` içine kaydeder.
-   `key` isimlerini değiştirebilirsin. */
+// === 1) Sorular: chips yok, sadece net sorular + örnek ipucu ===
 const FLOW = [
-  { key: "ad",     ask: "Karakterin adı nedir?" , hint: ["Prof. Nihat","Azil","Asiye"] },
-  { key: "meslek", ask: "Mesleği ne?"            , hint: ["Devlet adamı","Yazar","Öğretmen"] },
-  { key: "donem",  ask: "Hangi dönem/evren?"     , hint: ["1920’ler","Günümüz","Yakın gelecek"] }
+  { key:"ad",     ask:"Karakterin adı nedir?",  example:"Örn: Prof. Nihat" },
+  { key:"meslek", ask:"Mesleği ne?",            example:"Örn: Yazar" },
+  { key:"donem",  ask:"Hangi dönem/evren?",     example:"Örn: 1920’ler" }
 ];
 
-/* ========= 2) FİNAL CEVABI BURADA ŞABLONLA =========
-   Aşağıdaki metin tamamen SANA ait; özgürce değiştir.
-   answers.ad / answers.meslek / answers.donem ile yer tutucular doluyor. */
-function FINAL_REPLY(answers){
-  return (
-`Özet:
-${answers.ad}, ${answers.donem} döneminde geçen hikâyede bir ${answers.meslek}.
-Ansiklopedi sayfasında başlık şöyle geçecek:
+// === 2) Final çıktı: sadece verilen cevapları kullanır ===
+function FINAL_REPLY(a){
+  return `Özet:
+${a.ad}, ${a.donem} döneminde geçen hikâyede bir ${a.meslek}.
 
-“${answers.ad}” — ${answers.donem}
-• Meslek: ${answers.meslek}
-• Kısa giriş: Toplumsal dönüşüm yıllarında düşünce ve kültür tartışmalarında öne çıkan bir figür.
-
-İstersen bunu otomatik HTML sayfasına dökebilirim.`
-  );
+Ansiklopedi sayfasında başlık:
+“${a.ad}” — ${a.donem}
+• Meslek: ${a.meslek}
+• Kısa giriş: Toplumsal dönüşüm yıllarında öne çıkan bir figür.`;
 }
 
-/* ========= 3) (Opsiyonel) Anahtar kelime → hazır cevap =========
-   Chat esnasında kullanıcı serbest yazarsa bu kurallar eşleşir. */
-const FAQ = [
-  { pattern:/merhaba|selam/i, reply:"Selam! Önce birkaç kısa soru soracağım; sonra özetini çıkaracağım." },
-  { pattern:/yardım|help/i,   reply:"Yaz ve Enter’a bas. Yukarıdaki balonlarda da hazır seçenekler var." }
-];
-
-/* ========= Uygulama iskeleti ========= */
+// === Uygulama iskeleti ===
 const chatEl = document.getElementById('chat');
 const textEl = document.getElementById('text');
 const sendEl = document.getElementById('send');
-const chipsEl = document.getElementById('chips');
+const hintEl = document.getElementById('hint');
 let step = 0;
 const answers = {};
 
-function botSay(html){
+function bot(msg){ bubble('bot', msg); }
+function me(msg){ bubble('me',  msg); }
+function esc(s){ return s.replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+function bubble(who, text){
   const wrap = document.createElement('div');
-  wrap.className='msg bot';
-  wrap.innerHTML = `<div class="bubble"><p>${html}</p></div>`;
-  chatEl.appendChild(wrap); chatEl.scrollTop = chatEl.scrollHeight;
+  wrap.className = `msg ${who}`;
+  wrap.innerHTML = `<div class="bubble"><p>${esc(text)}</p></div>`;
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
 }
 
-function meSay(text){
-  const wrap = document.createElement('div');
-  wrap.className='msg me';
-  wrap.innerHTML = `<div class="bubble"><p>${escapeHtml(text)}</p></div>`;
-  chatEl.appendChild(wrap); chatEl.scrollTop = chatEl.scrollHeight;
-}
-
-function escapeHtml(str){
-  return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]) );
-}
-
-function renderChips(items=[]){
-  chipsEl.innerHTML='';
-  items.forEach(v=>{
-    const b=document.createElement('button');
-    b.className='chip'; b.textContent=v;
-    b.onclick=()=>{ textEl.value=v; send(); };
-    chipsEl.appendChild(b);
-  });
-}
-
-function askNext(){
-  if(step < FLOW.length){
-    const q = FLOW[step];
-    botSay(`<strong>${q.ask}</strong>${q.hint?.length?` <span class="pill">ör: ${q.hint.join(' · ')}</span>`:''}`);
-    renderChips(q.hint || []);
-    textEl.focus();
-  }else{
-    // bitti → final metin
-    renderChips([]);
-    botSay(`<strong>Hazır!</strong>\n\n${escapeHtml(FINAL_REPLY(answers))}`);
-  }
-}
-
-function tryFAQ(text){
-  for(const f of FAQ){
-    if(f.pattern.test(text)) { botSay(escapeHtml(f.reply)); return true; }
-  }
+// Sadece gerçek bir “cevap” kabul et: soru gibi yazılmış, boş, tek kelimelik şüpheli vs. filtrele
+function isQuestionLike(t){
+  const q = t.trim().toLowerCase();
+  if(!q) return true;
+  if(q.endsWith('?')) return true;
+  const currentAsk = FLOW[step]?.ask.toLowerCase();
+  if(currentAsk && q.includes(currentAsk.slice(0,10))) return true; // soruyu geri yazma
   return false;
+}
+
+function ask(){
+  const q = FLOW[step];
+  bot(`${q.ask}\n(${q.example})`);
+  hintEl.textContent = q.example;
+  textEl.placeholder = q.example;
+  textEl.focus();
 }
 
 function send(){
   const t = textEl.value.trim();
   if(!t) return;
-  meSay(t);
-  textEl.value='';
 
+  // akış içindeysek, geçerli bir cevap mı?
   if(step < FLOW.length){
-    answers[FLOW[step].key] = t;
-    step++;
-    setTimeout(askNext, 250);
-  }else{
-    // Akış bittikten sonra da kullanıcı yazarsa, FAQ kuralları devreye girsin.
-    if(!tryFAQ(t)){
-      botSay("Yeni bir senaryo başlatmak için sayfayı yenileyebilirsin (Cmd/Ctrl+R).");
+    if(isQuestionLike(t)){
+      bot(`⚠️ Lütfen soruyu değil, cevabı yaz: ${FLOW[step].example}`);
+      textEl.value = ''; return;
     }
+    me(t);
+    answers[FLOW[step].key] = t;
+    textEl.value = '';
+    step++;
+    if(step < FLOW.length) { setTimeout(ask, 250); }
+    else {
+      hintEl.textContent = '';
+      setTimeout(()=> bot('Hazır!\n\n' + FINAL_REPLY(answers)), 250);
+    }
+  } else {
+    // finalden sonra yazarsa
+    me(t);
+    bot('Yeni bir akış için sayfayı yenileyebilirsin (Cmd/Ctrl+R).');
   }
 }
 
@@ -155,8 +128,8 @@ sendEl.onclick = send;
 textEl.onkeydown = e => { if(e.key==='Enter') send(); };
 
 // Başlat
-botSay("Selam! Mini chat’e hoş geldin. Birkaç soru soracağım; en sonda tek bir özet metin vereceğim.");
-askNext();
+bot('Selam! 3 kısa soru soracağım; en sonda tek bir özet vereceğim.');
+ask();
 </script>
 </body>
 </html>
