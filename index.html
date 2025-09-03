@@ -6,28 +6,68 @@
 <meta name="theme-color" content="#0b1220">
 <title>Yapay Zeka</title>
 <style>
-  :root{--bg:#0b1220;--ink:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--bubble:#111827;--bot:#0b1220;--radius:14px}
+  :root{
+    --bg:#0b1220; --ink:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+    --bubble:#111827; --bot:#0b1220; --radius:14px;
+    --vh:100vh; /* JS ile gerçek cihaza göre güncellenecek */
+  }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif}
   body{display:grid;grid-template-rows:1fr}
-  .app{height:100svh;max-width:520px;margin:0 auto;padding:10px;display:grid;grid-template-rows:auto 1fr auto;gap:10px}
-  .head{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+  .app{
+    height:calc(var(--vh) * 100);
+    max-width:520px;margin:0 auto;padding:10px;
+    display:grid;grid-template-rows:auto 1fr auto;gap:10px;
+  }
+
+  .head{display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
   .head h1{font-size:15px;margin:0;font-weight:700}
-  .chat{overflow:auto;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+
+  .chat{
+    overflow:auto;padding:12px;border:1px solid var(--line);
+    border-radius:14px;background:rgba(255,255,255,.03);
+    scroll-behavior:smooth;
+    display:block;
+  }
   .msg{display:flex;gap:8px;margin:8px 0;align-items:flex-end}
-  .msg .bubble{max-width:86%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .msg .bubble{
+    max-width:92%; padding:12px 14px;border-radius:12px;
+    border:1px solid var(--line); box-shadow:0 8px 24px rgba(0,0,0,.25)
+  }
   .bot .bubble{background:var(--bot)}
   .me{justify-content:flex-end}
   .me .bubble{background:var(--bubble)}
   .bubble p{margin:0;white-space:pre-wrap}
-  .bubble figure{margin:6px 0 0}
-  .bubble img,.bubble svg{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#0a0f1a}
+  .bubble figure{margin:8px 0 0}
+  .bubble img,.bubble svg{
+    display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#0a0f1a
+  }
   .bubble figcaption{font-size:12px;color:var(--muted);margin-top:6px}
 
-  .input{display:grid;grid-template-columns:1fr auto;gap:8px}
-  .input input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bubble);color:var(--ink);outline:none}
-  .input button{padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0f172a;color:var(--ink);cursor:pointer}
-  .input button:active{transform:translateY(1px)}
+  /* ==== Kompozitör (yazma alanı) ==== */
+  .composer{
+    position:sticky; bottom:0;
+    padding-bottom:max(6px, env(safe-area-inset-bottom));
+  }
+  .bar{
+    display:grid; grid-template-columns:1fr auto; gap:8px;
+    border:1px solid var(--line); border-radius:14px; background:#0f172a; padding:8px;
+  }
+  textarea#text{
+    width:100%; resize:none; overflow:auto; border:1px solid var(--line);
+    background:var(--bubble); color:var(--ink); outline:none;
+    border-radius:12px; padding:12px; line-height:1.4;
+    min-height:44px; max-height:32vh; /* 1–6 satır civarı */
+    font:inherit;
+  }
+  button#send{
+    min-width:92px; min-height:44px; padding:12px 14px; border-radius:12px;
+    border:1px solid var(--line); background:#111827; color:var(--ink); cursor:pointer;
+  }
+  button#send:active{transform:translateY(1px)}
+  button#send[disabled]{opacity:.6; cursor:default}
 </style>
 </head>
 <body>
@@ -36,15 +76,27 @@
 
   <div id="chat" class="chat"></div>
 
-  <div>
-    <div class="input">
-      <input id="text" type="text" placeholder="Herhangi bir şey sor" autocomplete="off" inputmode="text">
+  <div class="composer">
+    <div class="bar">
+      <textarea id="text" rows="1" placeholder="Herhangi bir şey sor" autocomplete="off" inputmode="text"></textarea>
       <button id="send" aria-label="Gönder">Gönder</button>
     </div>
   </div>
 </div>
 
 <script>
+/* ====== Gerçek cihaz yüksekliği & klavye (iOS/Android) ====== */
+function setVH(){
+  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--vh', (h/100));
+}
+setVH();
+window.addEventListener('resize', setVH);
+if (window.visualViewport){
+  visualViewport.addEventListener('resize', setVH);
+  visualViewport.addEventListener('scroll', setVH);
+}
+
 /* ========== Manifest'i tek dosyada üret (PWA/ana ekrana ekleme) ========== */
 (function registerManifest(){
   const iconSvg = size=> `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="#0b1220"/><circle cx="50%" cy="50%" r="${size/3}" fill="#60a5fa"/></svg>`;
@@ -73,22 +125,41 @@ const textEl = document.getElementById('text');
 const sendEl = document.getElementById('send');
 
 function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
+function toBottom(){ chatEl.scrollTop = chatEl.scrollHeight; }
 function bubble(who, html){
   const wrap = document.createElement('div');
   wrap.className = `msg ${who}`;
   const b = document.createElement('div');
   b.className = 'bubble';
   if(typeof html === 'string') b.innerHTML = `<p>${html}</p>`; else b.appendChild(html);
-  wrap.appendChild(b); chatEl.appendChild(wrap); chatEl.scrollTop = chatEl.scrollHeight;
+  wrap.appendChild(b); chatEl.appendChild(wrap); toBottom();
 }
 function me(t){ bubble('me', esc(t)); }
 
+/* Otomatik büyüyen textarea */
+function autoGrow(){
+  textEl.style.height = 'auto';
+  const h = Math.min(textEl.scrollHeight, Math.round(window.innerHeight*0.32));
+  textEl.style.height = h + 'px';
+  toBottom();
+}
+textEl.addEventListener('input', autoGrow);
+
+/* Enter = gönder, Shift+Enter = yeni satır */
+textEl.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    send();
+  }
+});
+
+/* Normalizasyon */
 function normalize(t){
   try{ t = t.normalize('NFD').replace(/\p{Diacritic}/gu,''); }catch(_){}
   return t.toLowerCase()
           .replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i')
           .replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u')
-          .replace(/[^a-z0-9\s]/g,' ') // noktalama vs.
+          .replace(/[^a-z0-9\s]/g,' ')
           .replace(/\s+/g,' ').trim();
 }
 
@@ -122,7 +193,6 @@ function staffSVG(){
   `;
   return svg;
 }
-
 function vasePortraitSVG(){
   const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox','0 0 600 600');
@@ -140,7 +210,6 @@ function vasePortraitSVG(){
     </g>`;
   return svg;
 }
-
 function figureWithCaption(node, caption){
   const fig = document.createElement('figure'); fig.appendChild(node);
   const fc = document.createElement('figcaption'); fc.textContent = caption; fig.appendChild(fc); return fig;
@@ -155,39 +224,30 @@ function answer_karun_kimdir(){
 }
 function answer_asa_nasil(){
   const html = document.createElement('div');
-  html.innerHTML = `<p><strong>Kısa tanım:</strong> Kaynaklarda birebir tanımı yok; <em>Karun Hazinesi</em> etrafındaki anlatılardan esinle betimlenir.\n• <em>Malzeme</em>: altın kaplama bronz/saf altın.\n• <em>Motif</em>: çift başlı kartal, aslan pençesi ya da yılan.\n• <em>Boy</em>: 120–140 cm; spiral ve yazıt bezemeleri.\n• <em>Mitolojik varyant</em>: uçta taş kakmalar (zümrüt, yakut, lapis).\n• <em>Ağırlık notu</em>: som altın ve 3–5 cm çap için yaklaşık 20–30 kg.</p>`;
+  html.innerHTML = `<p><strong>Kısa tanım:</strong> Kaynaklarda birebir tanımı yok; <em>Karun Hazinesi</em> etrafındaki anlatılardan esinle betimlenir.
+• <em>Malzeme</em>: altın kaplama bronz/saf altın.
+• <em>Motif</em>: çift başlı kartal, aslan pençesi ya da yılan.
+• <em>Boy</em>: 120–140 cm; spiral ve yazıt bezemeleri.
+• <em>Mitolojik varyant</em>: uçta taş kakmalar (zümrüt, yakut, lapis).
+• <em>Ağırlık notu</em>: som altın ve 3–5 cm çap için yaklaşık 20–30 kg.</p>`;
+  html.appendChild(figureWithCaption(staffSVG(),'Karun’un asası — konsept eskiz (temsili)'));
   return html;
 }
 function answer_gorsel(){
-  // 1) <figure> + <img> + <figcaption> oluştur
   const fig = document.createElement('figure');
-
-  // 2) Görsel kaynağı: yerel dosya veya mutlak URL
   const img = new Image();
-  // Örnek A: aynı repoda /assets/karun.png
-  img.src = 'assets/karun.png';
-  // Örnek B (URL): img.src = 'https://…/benim-karun-gorselim.jpg';
-
-  img.alt = 'Karun (Kroisos) portresi';
-  img.loading = 'lazy';   // mobilde performans
+  img.src = 'assets/karun.png';  /* Kendi görselin — URL de verebilirsin */
+  img.alt = 'Karun (Kroisos) portresi'; img.loading = 'lazy';
   fig.appendChild(img);
-
   const cap = document.createElement('figcaption');
-  cap.textContent = 'İsteğine uygun gerçek bir görsel bulamadım ama AI yardımıyla bir görsel ürettim.';
+  cap.textContent = 'Karun (Kroisos) — proje görseli';
   fig.appendChild(cap);
-
-  // 3) Yüklenemezse otomatik SVG’ye düş (mevcut temsili)
-  img.onerror = () => {
-    fig.innerHTML = '';                       // temizle
-    fig.appendChild(vasePortraitSVG());       // mevcut SVG fonksiyonun
-    const c = document.createElement('figcaption');
-    c.textContent = 'Karun — temsili (SVG)';
-    fig.appendChild(c);
+  img.onerror = ()=>{
+    fig.innerHTML=''; fig.appendChild(vasePortraitSVG());
+    const c=document.createElement('figcaption'); c.textContent='Karun — temsili (SVG)'; fig.appendChild(c);
   };
-
   return fig;
 }
-
 function answer_asa_nerede(){
   return "Doğrulanmış tekil bir ‘Karun’un asası’ eseri yoktur. Obje, efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden gerçek dünyada kesin bir konum verilemez. Senaryoda yeri kurgusaldır.";
 }
@@ -205,18 +265,20 @@ function findAnswer(text){
 
 /* ============ Akış ============ */
 function send(){
-  const t = textEl.value.trim(); if(!t) return; me(t); textEl.value='';
+  const t = textEl.value.trim(); if(!t) return;
+  sendEl.disabled = true;
+  me(t); textEl.value=''; autoGrow();
   setTimeout(()=>{
     const r = findAnswer(t);
-    if(typeof r === 'string'){ bubble('bot', r); }
-    else { bubble('bot', r); }
-  }, 160);
+    (typeof r === 'string') ? bubble('bot', r) : bubble('bot', r);
+    sendEl.disabled = false; textEl.focus();
+  }, 140);
 }
+sendEl.onclick = send;
 
-sendEl.onclick = send; textEl.onkeydown = e=>{ if(e.key==='Enter') send(); };
-
-// Karşılamayı kısa tut
-bubble('bot', 'Merhaba! Neyi merak ediyorsun?.');
+/* İlk yüklemede alanı oturt & karşılama */
+autoGrow();
+bubble('bot','Merhaba! Neyi merak ediyorsun?');
 </script>
 </body>
 </html>
