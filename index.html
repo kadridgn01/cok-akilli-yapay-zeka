@@ -3,133 +3,257 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mini Chat — Senaryolu</title>
+<title>Mini Chat — Senaryo Kontrollü Q&A</title>
 <style>
-  :root{--bg:#0f172a;--panel:#0b1220;--ink:#e2e8f0;--muted:#94a3b8;--accent:#60a5fa;--radius:14px}
-  *{box-sizing:border-box} html,body{margin:0;height:100%;background:linear-gradient(180deg,#0b1220,#111827)}
+  :root{--bg:#0f172a;--panel:#0b1220;--ink:#e2e8f0;--muted:#94a3b8;--accent:#60a5fa;--accent-2:#34d399;--radius:14px}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:linear-gradient(180deg,#0b1220,#111827)}
   body{font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif;color:var(--ink);display:grid;place-items:center}
-  .app{width:min(900px,92vw);height:min(84vh,780px);display:grid;grid-template-rows:auto 1fr auto;gap:12px}
-  .head{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid #1f2937;border-radius:var(--radius)}
-  .head h1{font-size:16px;margin:0} .head small{color:var(--muted)}
-  .chat{overflow:auto;padding:16px;border:1px solid #1f2937;border-radius:var(--radius);background:rgba(255,255,255,.03)}
+  .app{width:min(980px,94vw);height:min(88vh,860px);display:grid;grid-template-rows:auto 1fr auto;gap:12px}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid #1f2937;border-radius:var(--radius)}
+  .head h1{font-size:16px;margin:0}
+  .head small{color:var(--muted)}
+
+  .chat{overflow:auto;padding:16px;border:1px solid #1f2937;border-radius:var(--radius);background:rgba(255,255,255,.03);position:relative}
   .msg{display:flex;gap:10px;margin:10px 0;align-items:flex-start}
-  .msg .bubble{max-width:75%;padding:10px 12px;border-radius:12px;border:1px solid #1f2937;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-  .bot .bubble{background:#0b1220} .me{justify-content:flex-end} .me .bubble{background:#111827}
+  .msg .bubble{max-width:78%;padding:10px 12px;border-radius:12px;border:1px solid #1f2937;box-shadow:0 8px 24px rgba(0,0,0,.25);position:relative}
+  .bot .bubble{background:#0b1220}
+  .me{justify-content:flex-end}
+  .me .bubble{background:#111827}
   .bubble p{margin:0;white-space:pre-wrap}
-  .input{display:flex;gap:10px}
+  .copy{position:absolute;top:6px;right:6px;font-size:11px;color:#9ca3af;cursor:pointer;user-select:none}
+  .copy:hover{color:#e5e7eb}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px}
+  .chip{font-size:12px;color:#cbd5e1;border:1px dashed #334155;border-radius:999px;padding:6px 10px;cursor:pointer}
+  .chip:hover{border-style:solid}
+
+  .input{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center}
   .input input{flex:1;padding:12px;border-radius:12px;border:1px solid #1f2937;background:#0b1220;color:var(--ink);outline:none}
   .input button{padding:12px 14px;border-radius:12px;border:1px solid #1f2937;background:#111827;color:var(--ink);cursor:pointer}
   .input button:hover{background:#0f172a}
   .hint{display:block;color:var(--muted);font-size:12px;margin-top:6px}
-  .error{color:#fecaca}
+
+  /* Yönetmen paneli */
+  .panel{display:none;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  .panel.active{display:grid}
+  .card{border:1px solid #1f2937;background:#0b1220;border-radius:12px;padding:12px}
+  .card h3{margin:.2rem 0 .6rem;font-size:14px;color:#cbd5e1}
+  textarea, input[type="text"].wide{width:100%;background:#0b1220;color:#e5e7eb;border:1px solid #1f2937;border-radius:10px;padding:10px;font:inherit}
+  textarea{min-height:160px}
+  .row{display:flex;gap:8px;align-items:center}
+  .tag{font-size:12px;color:#10b981;border:1px solid #10b981;border-radius:999px;padding:4px 8px}
+  .toggle{appearance:none;display:inline-block;width:42px;height:24px;border-radius:999px;position:relative;background:#374151;cursor:pointer}
+  .toggle:checked{background:#059669}
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
+  .toggle:checked::after{transform:translateX(18px)}
+
+  .typing{opacity:.8;}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="head">
-    <h1>Mini Chat</h1><small>— 3 soru, finalde özet</small>
+    <div>
+      <h1>Mini Chat</h1>
+      <small>— Senaryo kontrollü cevap sistemi ("istediğim cevabı ver")</small>
+    </div>
+    <div class="row">
+      <label class="row" style="gap:6px">
+        <input id="dirToggle" type="checkbox" class="toggle">
+        <span style="font-size:12px;color:#cbd5e1">Yönetmen Modu</span>
+      </label>
+    </div>
   </div>
 
-  <div id="chat" class="chat"></div>
+  <div id="chat" class="chat">
+    <div class="chips" id="chips"></div>
+  </div>
 
   <div>
     <div class="input">
-      <input id="text" type="text" placeholder="Yanıt yaz ve Enter’a bas…" autocomplete="off">
+      <input id="text" type="text" placeholder="Sorunu yaz ve Enter’a bas…" autocomplete="off">
       <button id="send">Gönder</button>
+      <button id="clear">Temizle</button>
     </div>
-    <small id="hint" class="hint"></small>
+    <small id="hint" class="hint">İpucu: 
+      Örn. "Karun'un asası nasıl bir şey?", "Ağırlığı kaç kilo olabilir?", "Giriş nereden?"</small>
+
+    <!-- Yönetmen paneli -->
+    <div id="panel" class="panel">
+      <div class="card">
+        <h3>1) Anında Zorunlu Yanıt</h3>
+        <p>Buraya yazdığın metin <em>bir sonraki</em> bot mesajı olarak aynen gönderilir.</p>
+        <input id="forceReply" class="wide" type="text" placeholder="Örn: Bu iki başlı kartal, Lidya devletinin simgesidir…">
+        <div class="row" style="margin-top:8px">
+          <span class="tag">/force</span>
+          <small class="muted">Komut olarak da kullanabilirsin: sohbete <code>/force …</code> yaz.</small>
+        </div>
+      </div>
+      <div class="card">
+        <h3>2) Özel Kurallar (Regex)</h3>
+        <p>Sol alandaki JSON'u düzenleyerek kendi eşleşme→yanıt kuralını yaz. Her nesne: { "match": "regex", "reply": "metin" }</p>
+        <textarea id="rules"></textarea>
+        <div class="row" style="justify-content:space-between;margin-top:8px">
+          <small style="color:#9ca3af">Önce senin kuralların, sonra yerleşik bilgi tabanı çalışır.</small>
+          <button id="saveRules">Kuralları Kaydet</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-// === 1) Sorular: chips yok, sadece net sorular + örnek ipucu ===
-const FLOW = [
-  { key:"ad",     ask:"Karakterin adı nedir?",  example:"Örn: Prof. Nihat" },
-  { key:"meslek", ask:"Mesleği ne?",            example:"Örn: Yazar" },
-  { key:"donem",  ask:"Hangi dönem/evren?",     example:"Örn: 1920’ler" }
-];
-
-// === 2) Final çıktı: sadece verilen cevapları kullanır ===
-function FINAL_REPLY(a){
-  return `Özet:
-${a.ad}, ${a.donem} döneminde geçen hikâyede bir ${a.meslek}.
-
-Ansiklopedi sayfasında başlık:
-“${a.ad}” — ${a.donem}
-• Meslek: ${a.meslek}
-• Kısa giriş: Toplumsal dönüşüm yıllarında öne çıkan bir figür.`;
-}
-
-// === Uygulama iskeleti ===
+// === Basit yardımcılar ===
 const chatEl = document.getElementById('chat');
 const textEl = document.getElementById('text');
 const sendEl = document.getElementById('send');
+const clearEl = document.getElementById('clear');
 const hintEl = document.getElementById('hint');
-let step = 0;
-const answers = {};
+const panelEl = document.getElementById('panel');
+const dirToggle = document.getElementById('dirToggle');
+const forceEl = document.getElementById('forceReply');
+const rulesEl = document.getElementById('rules');
+const saveRulesEl = document.getElementById('saveRules');
+const chipsEl = document.getElementById('chips');
 
-function bot(msg){ bubble('bot', msg); }
-function me(msg){ bubble('me',  msg); }
-function esc(s){ return s.replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
 function bubble(who, text){
   const wrap = document.createElement('div');
   wrap.className = `msg ${who}`;
-  wrap.innerHTML = `<div class="bubble"><p>${esc(text)}</p></div>`;
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.innerHTML = `<span class="copy" title="Kopyala">⧉</span><p>${esc(text)}</p>`;
+  b.querySelector('.copy').onclick = ()=> navigator.clipboard.writeText(text);
+  wrap.appendChild(b);
   chatEl.appendChild(wrap);
   chatEl.scrollTop = chatEl.scrollHeight;
 }
-
-// Sadece gerçek bir “cevap” kabul et: soru gibi yazılmış, boş, tek kelimelik şüpheli vs. filtrele
-function isQuestionLike(t){
-  const q = t.trim().toLowerCase();
-  if(!q) return true;
-  if(q.endsWith('?')) return true;
-  const currentAsk = FLOW[step]?.ask.toLowerCase();
-  if(currentAsk && q.includes(currentAsk.slice(0,10))) return true; // soruyu geri yazma
-  return false;
+function typing(on){
+  if(on){
+    const t = document.createElement('div');
+    t.className = 'msg bot typing'; t.id = 'typing';
+    t.innerHTML = `<div class="bubble"><p>yazıyor…</p></div>`;
+    chatEl.appendChild(t); chatEl.scrollTop = chatEl.scrollHeight; return;
+  }
+  const el=document.getElementById('typing'); if(el) el.remove();
 }
 
-function ask(){
-  const q = FLOW[step];
-  bot(`${q.ask}\n(${q.example})`);
-  hintEl.textContent = q.example;
-  textEl.placeholder = q.example;
-  textEl.focus();
+// === Yönetmen Modu ===
+dirToggle.onchange = ()=>{ panelEl.classList.toggle('active', dirToggle.checked); };
+
+// Örnek özel kurallar
+const DEFAULT_RULES = [
+  {match:"karun.?un?\\s+asasi|kroisos.*asa|asa.*karun", reply:
+    "Bu iki başlı kartal, Lidya devletinin simgesi sayılır. Uç kısmı çift başlı kartal formunda olan, törenlerde taşınan bir asa gibi düşün. Gövdesi metal – muhtemelen altın kaplama."},
+  {match:"(agirlik|kac kilo|kilo).*asa|asa.*(agirlik|kac kilo)", reply:
+    "Eğer som altınsa ve çapı 3–5 cm ise, uzunluğa bağlı olarak 20–30 kiloya kadar çıkabilir."},
+  {match:"giris|nereden gir|nasil gir|gir(?:i|)s|rota|plan", reply:
+    "Plan: İki giriş var. Biri Ayasofya yönünden, diğeri Topkapı Sarayı bahçesinden. Müsait olan taraftan girilecek."},
+  {match:"coz(m|)e.*katman|ikinci katman|sifre|bulmaca", reply:
+    "İkinci katmanı çözen ekipler var; Felemezler de aynı işi yaptı. Sultanahmet bağlantısı buradan geliyor."}
+];
+
+// Yükle/Kaydet
+function loadRules(){
+  const raw = localStorage.getItem('sc_rules');
+  const list = raw ? JSON.parse(raw) : DEFAULT_RULES;
+  rulesEl.value = JSON.stringify(list, null, 2);
+}
+function saveRules(){
+  try{ localStorage.setItem('sc_rules', rulesEl.value); flash('Kurallar kaydedildi.'); }
+  catch(e){ flash('Kaydedilemedi: '+e.message,true); }
+}
+saveRulesEl.onclick = saveRules; loadRules();
+
+function getUserRules(){
+  try{ return JSON.parse(rulesEl.value).map(r=>({ re:new RegExp(r.match,'i'), reply:r.reply })); }
+  catch{ return []; }
+}
+
+// === Yerleşik Bilgi Tabanı (senaryoya göre) ===
+const KB = [
+  {keywords:["karun","kroisos","asa"], reply:
+   "Bu iki başlı kartal, Lidya devletinin simgesidir. Aşağı–yukarı böyle bir asa olabilir."},
+  {keywords:["asa","kilo","ağırlık"], reply:
+   "Eğer som altınsa ve çapı 3–5 cm ise 20–30 kiloya kadar çeker."},
+  {keywords:["giriş","ayasofya","topkapı","plan"], reply:
+   "İki giriş var: ilki Ayasofya tarafından, diğeri Topkapı Sarayı bahçesinden. Uygun olandan girilecek."},
+  {keywords:["felemez","ikinci","katman","sultan","ahmet"], reply:
+   "Felemezler de aynı şeyi yaptı; ikinci katmanı çözmüşlerdi. Sultanahmet bağlantısı buradan."}
+];
+
+function normalize(t){
+  return t.toLowerCase()
+          .replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i')
+          .replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u');
+}
+
+function score(rule, q){
+  const n = normalize(q);
+  let s = 0; for(const k of rule.keywords){ if(n.includes(k)) s += 1; }
+  return s;
+}
+
+function answerFromKB(q){
+  // Önce kullanıcı tanımlı kurallar (regex)
+  for(const {re,reply} of getUserRules()){
+    if(re.test(q)) return reply;
+  }
+  // Sonra ana KB
+  let best = {score:0, reply:null};
+  for(const r of KB){
+    const sc = score(r, q);
+    if(sc > best.score) best = {score:sc, reply:r.reply};
+  }
+  return best.reply || "Bunu netleştirmek için biraz daha açar mısın? Örn. 'asaya ait sembol' ya da 'ağırlık' gibi.";
+}
+
+// === Öntanımlı çip sorular ===
+const SUGGESTIONS = [
+  "Karun'un asası nasıl bir şey?",
+  "Ağırlığı tahminen kaç kilo olur?",
+  "Giriş nereden yapılıyor?",
+  "İkinci katman çözüldü mü?"
+];
+SUGGESTIONS.forEach(s=>{
+  const c = document.createElement('button');
+  c.className='chip'; c.textContent = s; c.onclick=()=>{textEl.value=s; send();};
+  chipsEl.appendChild(c);
+});
+
+// === Akış ===
+function flash(msg, isErr=false){
+  hintEl.textContent = msg; hintEl.style.color = isErr? '#fecaca' : '#94a3b8';
+  setTimeout(()=>{ hintEl.textContent = 'İpucu: Örn. "Karun\'un asası nasıl bir şey?"'; hintEl.style.color = '#94a3b8'; }, 3000);
 }
 
 function send(){
-  const t = textEl.value.trim();
-  if(!t) return;
-
-  // akış içindeysek, geçerli bir cevap mı?
-  if(step < FLOW.length){
-    if(isQuestionLike(t)){
-      bot(`⚠️ Lütfen soruyu değil, cevabı yaz: ${FLOW[step].example}`);
-      textEl.value = ''; return;
-    }
-    me(t);
-    answers[FLOW[step].key] = t;
-    textEl.value = '';
-    step++;
-    if(step < FLOW.length) { setTimeout(ask, 250); }
-    else {
-      hintEl.textContent = '';
-      setTimeout(()=> bot('Hazır!\n\n' + FINAL_REPLY(answers)), 250);
-    }
-  } else {
-    // finalden sonra yazarsa
-    me(t);
-    bot('Yeni bir akış için sayfayı yenileyebilirsin (Cmd/Ctrl+R).');
+  const t = textEl.value.trim(); if(!t) return;
+  // /force kısayolu
+  if(/^\s*\/force\s+/.test(t)){
+    forceEl.value = t.replace(/^\s*\/force\s+/,'');
+    textEl.value=''; flash('Zorunlu yanıt ayarlandı.'); return;
   }
+  bubble('me', t); textEl.value='';
+
+  typing(true);
+  setTimeout(()=>{
+    typing(false);
+    // Yönetmen modu: force reply öncelikli
+    const force = forceEl.value.trim();
+    if(force){ bubble('bot', force); forceEl.value=''; return; }
+    const reply = answerFromKB(t);
+    bubble('bot', reply);
+  }, 450 + Math.random()*350);
 }
 
 sendEl.onclick = send;
-textEl.onkeydown = e => { if(e.key==='Enter') send(); };
+textEl.onkeydown = e=>{ if(e.key==='Enter') send(); };
+clearEl.onclick = ()=>{ chatEl.innerHTML = '<div class="chips" id="chips"></div>'; chipsEl.innerHTML=''; SUGGESTIONS.forEach(s=>{ const c=document.createElement('button'); c.className='chip'; c.textContent=s; c.onclick=()=>{textEl.value=s; send();}; chatEl.querySelector('#chips').appendChild(c); }); };
 
-// Başlat
-bot('Selam! 3 kısa soru soracağım; en sonda tek bir özet vereceğim.');
-ask();
+// Başlat mesajı
+bubble('bot', 'Selam! Senaryodaki araştırma sorularını sor, ben kısa ve net yanıt vereyim.\nİstersen Yönetmen Modu ile cevabı kilitleyebilirsin.');
 </script>
 </body>
 </html>
