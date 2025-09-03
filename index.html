@@ -2,69 +2,43 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mini Chat — Senaryo Kontrollü Q&A</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>Mini Chat — Karun Q&A (Mobil)</title>
 <style>
-  :root{--bg:#0f172a;--panel:#0b1220;--ink:#e2e8f0;--muted:#94a3b8;--accent:#60a5fa;--accent-2:#34d399;--radius:14px}
+  :root{--bg:#0b1220;--ink:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--bubble:#111827;--bot:#0b1220;--accent:#60a5fa;--radius:14px}
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:linear-gradient(180deg,#0b1220,#111827)}
-  body{font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif;color:var(--ink);display:grid;place-items:center}
-  .app{width:min(980px,94vw);height:min(88vh,860px);display:grid;grid-template-rows:auto 1fr auto;gap:12px}
-  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid #1f2937;border-radius:var(--radius)}
-  .head h1{font-size:16px;margin:0}
-  .head small{color:var(--muted)}
-
-  .chat{overflow:auto;padding:16px;border:1px solid #1f2937;border-radius:var(--radius);background:rgba(255,255,255,.03);position:relative}
-  .msg{display:flex;gap:10px;margin:10px 0;align-items:flex-start}
-  .msg .bubble{max-width:78%;padding:10px 12px;border-radius:12px;border:1px solid #1f2937;box-shadow:0 8px 24px rgba(0,0,0,.25);position:relative}
-  .bot .bubble{background:#0b1220}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif}
+  body{display:grid;grid-template-rows:1fr}
+  .app{height:100svh;max-width:520px;margin:0 auto;padding:10px;display:grid;grid-template-rows:auto 1fr auto;gap:10px}
+  .head{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+  .head h1{font-size:15px;margin:0;font-weight:700}
+  .chat{overflow:auto;padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+  .msg{display:flex;gap:8px;margin:8px 0;align-items:flex-end}
+  .msg .bubble{max-width:86%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .bot .bubble{background:var(--bot)}
   .me{justify-content:flex-end}
-  .me .bubble{background:#111827}
+  .me .bubble{background:var(--bubble)}
   .bubble p{margin:0;white-space:pre-wrap}
-  .copy{position:absolute;top:6px;right:6px;font-size:11px;color:#9ca3af;cursor:pointer;user-select:none}
-  .copy:hover{color:#e5e7eb}
+  .bubble figure{margin:6px 0 0}
+  .bubble img,.bubble svg{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#0a0f1a}
+  .bubble figcaption{font-size:12px;color:var(--muted);margin-top:6px}
 
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px}
-  .chip{font-size:12px;color:#cbd5e1;border:1px dashed #334155;border-radius:999px;padding:6px 10px;cursor:pointer}
-  .chip:hover{border-style:solid}
+  .input{display:grid;grid-template-columns:1fr auto;gap:8px}
+  .input input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bubble);color:var(--ink);outline:none}
+  .input button{padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0f172a;color:var(--ink);cursor:pointer}
+  .input button:active{transform:translateY(1px)}
 
-  .input{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center}
-  .input input{flex:1;padding:12px;border-radius:12px;border:1px solid #1f2937;background:#0b1220;color:var(--ink);outline:none}
-  .input button{padding:12px 14px;border-radius:12px;border:1px solid #1f2937;background:#111827;color:var(--ink);cursor:pointer}
-  .input button:hover{background:#0f172a}
+  .chips{display:flex;gap:8px;overflow:auto;padding-bottom:4px}
+  .chip{flex:0 0 auto;background:#e5e7eb0f;border:1px dashed #334155;color:#cbd5e1;border-radius:999px;padding:8px 12px;font-size:13px}
+  .chip:active{transform:translateY(1px)}
+
   .hint{display:block;color:var(--muted);font-size:12px;margin-top:6px}
-
-  /* Yönetmen paneli */
-  .panel{display:none;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
-  .panel.active{display:grid}
-  .card{border:1px solid #1f2937;background:#0b1220;border-radius:12px;padding:12px}
-  .card h3{margin:.2rem 0 .6rem;font-size:14px;color:#cbd5e1}
-  textarea, input[type="text"].wide{width:100%;background:#0b1220;color:#e5e7eb;border:1px solid #1f2937;border-radius:10px;padding:10px;font:inherit}
-  textarea{min-height:160px}
-  .row{display:flex;gap:8px;align-items:center}
-  .tag{font-size:12px;color:#10b981;border:1px solid #10b981;border-radius:999px;padding:4px 8px}
-  .toggle{appearance:none;display:inline-block;width:42px;height:24px;border-radius:999px;position:relative;background:#374151;cursor:pointer}
-  .toggle:checked{background:#059669}
-  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
-  .toggle:checked::after{transform:translateX(18px)}
-
-  .typing{opacity:.8;}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="head">
-    <div>
-      <h1>Mini Chat</h1>
-      <small>— Senaryo kontrollü cevap sistemi ("istediğim cevabı ver")</small>
-    </div>
-    <div class="row">
-      <label class="row" style="gap:6px">
-        <input id="dirToggle" type="checkbox" class="toggle">
-        <span style="font-size:12px;color:#cbd5e1">Yönetmen Modu</span>
-      </label>
-    </div>
-  </div>
+  <div class="head"><h1>Mini Chat — Karun Q&A</h1></div>
 
   <div id="chat" class="chat">
     <div class="chips" id="chips"></div>
@@ -72,188 +46,182 @@
 
   <div>
     <div class="input">
-      <input id="text" type="text" placeholder="Sorunu yaz ve Enter’a bas…" autocomplete="off">
-      <button id="send">Gönder</button>
-      <button id="clear">Temizle</button>
+      <input id="text" type="text" placeholder="Sorunu yaz ve Enter’a bas…" autocomplete="off" inputmode="text">
+      <button id="send" aria-label="Gönder">Gönder</button>
     </div>
-    <small id="hint" class="hint">İpucu: 
-      Örn. "Karun'un asası nasıl bir şey?", "Ağırlığı kaç kilo olabilir?", "Giriş nereden?"</small>
-
-    <!-- Yönetmen paneli -->
-    <div id="panel" class="panel">
-      <div class="card">
-        <h3>1) Anında Zorunlu Yanıt</h3>
-        <p>Buraya yazdığın metin <em>bir sonraki</em> bot mesajı olarak aynen gönderilir.</p>
-        <input id="forceReply" class="wide" type="text" placeholder="Örn: Bu iki başlı kartal, Lidya devletinin simgesidir…">
-        <div class="row" style="margin-top:8px">
-          <span class="tag">/force</span>
-          <small class="muted">Komut olarak da kullanabilirsin: sohbete <code>/force …</code> yaz.</small>
-        </div>
-      </div>
-      <div class="card">
-        <h3>2) Özel Kurallar (Regex)</h3>
-        <p>Sol alandaki JSON'u düzenleyerek kendi eşleşme→yanıt kuralını yaz. Her nesne: { "match": "regex", "reply": "metin" }</p>
-        <textarea id="rules"></textarea>
-        <div class="row" style="justify-content:space-between;margin-top:8px">
-          <small style="color:#9ca3af">Önce senin kuralların, sonra yerleşik bilgi tabanı çalışır.</small>
-          <button id="saveRules">Kuralları Kaydet</button>
-        </div>
-      </div>
-    </div>
+    <small id="hint" class="hint">İpucu: “karun nedir?”, “karun kimdir?”, “karun'un asası nasıl bir şey?”, “görseli var mı?”, “karun'un asası nerededir?”</small>
   </div>
 </div>
 
 <script>
-// === Basit yardımcılar ===
+/* ===== Manifest: tek dosyada dinamik üret ===== */
+(function registerManifest(){
+  const iconSvg = size=> `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="#0b1220"/><circle cx="50%" cy="50%" r="${size/3}" fill="#60a5fa"/></svg>`;
+  const manifest = {
+    name: "Mini Chat — Karun Q&A",
+    short_name: "KarunChat",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#0b1220",
+    theme_color: "#0b1220",
+    icons: [192,512].map(sz=>({
+      src: 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(iconSvg(sz)),
+      sizes: sz+'x'+sz,
+      type: 'image/svg+xml'
+    }))
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest'; link.href = url; document.head.appendChild(link);
+})();
+
+/* ===== Yardımcılar ===== */
 const chatEl = document.getElementById('chat');
 const textEl = document.getElementById('text');
 const sendEl = document.getElementById('send');
-const clearEl = document.getElementById('clear');
-const hintEl = document.getElementById('hint');
-const panelEl = document.getElementById('panel');
-const dirToggle = document.getElementById('dirToggle');
-const forceEl = document.getElementById('forceReply');
-const rulesEl = document.getElementById('rules');
-const saveRulesEl = document.getElementById('saveRules');
 const chipsEl = document.getElementById('chips');
+const hintEl = document.getElementById('hint');
 
 function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
-function bubble(who, text){
+function bubble(who, html){
   const wrap = document.createElement('div');
   wrap.className = `msg ${who}`;
   const b = document.createElement('div');
   b.className = 'bubble';
-  b.innerHTML = `<span class="copy" title="Kopyala">⧉</span><p>${esc(text)}</p>`;
-  b.querySelector('.copy').onclick = ()=> navigator.clipboard.writeText(text);
-  wrap.appendChild(b);
-  chatEl.appendChild(wrap);
-  chatEl.scrollTop = chatEl.scrollHeight;
+  if(typeof html === 'string') b.innerHTML = `<p>${html}</p>`; else b.appendChild(html);
+  wrap.appendChild(b); chatEl.appendChild(wrap); chatEl.scrollTop = chatEl.scrollHeight;
 }
-function typing(on){
-  if(on){
-    const t = document.createElement('div');
-    t.className = 'msg bot typing'; t.id = 'typing';
-    t.innerHTML = `<div class="bubble"><p>yazıyor…</p></div>`;
-    chatEl.appendChild(t); chatEl.scrollTop = chatEl.scrollHeight; return;
+function me(t){ bubble('me', esc(t)); }
+
+function normalize(t){return t.toLowerCase().trim()
+  .replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i').replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u');}
+
+/* ===== Görsel üreten küçük yardımcılar (inline, tek dosya) ===== */
+function staffSVG(){
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 300 600'); svg.setAttribute('role','img');
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#d4af37"/>
+        <stop offset="60%" stop-color="#b08d2b"/>
+        <stop offset="100%" stop-color="#7a5d1a"/>
+      </linearGradient>
+      <radialGradient id="gem" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#c7f9cc"/>
+        <stop offset="100%" stop-color="#1f6f5b"/>
+      </radialGradient>
+    </defs>
+    <!-- Gövde -->
+    <rect x="138" y="80" width="24" height="440" rx="12" fill="url(#g)"/>
+    <!-- Spiral bezemeler -->
+    <g stroke="#3a2a0d" stroke-width="2" opacity=".35" fill="none">
+      ${Array.from({length:12}).map((_,i)=>`<path d="M140 ${100+i*30} q20 8 40 0"/>`).join('')}
+    </g>
+    <!-- Uç: çift başlı kartal stilize -->
+    <g transform="translate(150,70)">
+      <path d="M -70 0 q 30 -30 70 -30 q 40 0 70 30 q -30 30 -70 30 q -40 0 -70 -30 z" fill="url(#g)" stroke="#3a2a0d" />
+      <circle cx="0" cy="0" r="10" fill="url(#gem)" stroke="#0b3330"/>
+      <path d="M-35 -5 l-20 -10 l10 20 z" fill="#2a200a" opacity=".6"/>
+      <path d="M35 -5 l20 -10 l-10 20 z" fill="#2a200a" opacity=".6"/>
+    </g>
+    <!-- Dip kapak -->
+    <ellipse cx="150" cy="520" rx="16" ry="8" fill="#6e5320"/>
+  `;
+  return svg;
+}
+
+function vasePortraitSVG(){
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 600 600');
+  svg.innerHTML = `
+    <rect width="600" height="600" fill="#0a0f1a"/>
+    <g transform="translate(140,140)">
+      <circle cx="160" cy="160" r="160" fill="#c46b2a"/>
+      <path d="M80 120 q40 -70 120 -70 q80 0 120 70 q-40 70 -120 70 q-80 0 -120 -70 z" fill="#d67d3b"/>
+      <path d="M120 210 q80 40 160 0" stroke="#3b2715" stroke-width="10" fill="none"/>
+      <path d="M110 240 q40 30 200 30" stroke="#3b2715" stroke-width="8" fill="none"/>
+      <circle cx="210" cy="160" r="8" fill="#3b2715"/>
+      <path d="M240 170 q20 10 30 0" stroke="#3b2715" stroke-width="8" fill="none"/>
+      <path d="M150 90 q30 -40 60 -45 q30 12 60 45" stroke="#3b2715" stroke-width="10" fill="none"/>
+      <path d="M160 60 l-40 30 l20 0 z M260 60 l40 30 l-20 0 z" fill="#d67d3b"/>
+    </g>`;
+  return svg;
+}
+
+function figureWithCaption(node, caption){
+  const fig = document.createElement('figure'); fig.appendChild(node);
+  const fc = document.createElement('figcaption'); fc.textContent = caption; fig.appendChild(fc); return fig;
+}
+
+/* ===== Bilgi tabanı ===== */
+const ANSWERS = [
+  {
+    tests:[/karun nedir/,/karun ne demek/],
+    reply: () => "Karun, Türkçede aşırı zengin kişi için kullanılan bir özel addır (\"Karun kadar zengin\"). Efsanelerdeki Karun figürü, tarihsel olarak Batı Anadolu’daki Lidya kralı Kroisos’la özdeşleştirilir."
+  },
+  {
+    tests:[/karun kimdir/,/kroisos kimdir/],
+    reply: () => "Karun diye anılan kişi, MÖ 6. yüzyılda hüküm süren Lidya kralı **Kroisos**’tur. Başkenti Sardes’tir; zenginliği, tapınaklara armağanları ve para/sikke düzenindeki rolüyle tanınır."
+  },
+  {
+    tests:[/karun.?un? asasi nasil bir sey/,/asasi nasil/],
+    reply: () => {
+      const html = document.createElement('div');
+      html.innerHTML = `<p><strong>Kısa tanım:</strong> Tarihî kayıtlarda birebir tanımlı bir asa yok; ancak <em>Karun Hazinesi</em> anlatılarından yola çıkarak tasvir edilir. 
+• <em>Malzeme</em>: altın kaplama bronz/saf altın. 
+• <em>Motif</em>: çift başlı kartal, aslan pençesi ya da yılan. 
+• <em>Boy</em>: 120–140 cm; gövde üzerinde spiral ve yazıt bezemeleri. 
+• <em>Mitolojik varyant</em>: uçta taş kakmalar (zümrüt, yakut, lapis); hafif ışıltı. 
+• <em>Ağırlık notu</em>: som altın ve 3–5 cm çap için 20–30 kg aralığı düşünülebilir.</p>`;
+      html.appendChild(figureWithCaption(staffSVG(), 'Karun’un asası — konsept eskiz (stilize)'));
+      return html;
+    }
+  },
+  {
+    tests:[/gorseli var mi/,/foto(gr|)raf/i,/resim/i],
+    reply: () => {
+      const html = document.createElement('div');
+      html.appendChild(figureWithCaption(vasePortraitSVG(), 'Karun (Kroisos) — kırmızı figür vazosu estetiğinde temsili portre'));
+      html.appendChild(document.createElement('p')).textContent = 'Not: Bu görsel temsili bir çizimdir; projede kendi dosyanızla değiştirebilirsiniz (örn. assets/karun.png).';
+      return html;
+    }
+  },
+  {
+    tests:[/karun.?un? asasi nerededir/,/asanin yeri|asa nerede/],
+    reply: () => "Doğrulanmış, tekil bir ‘Karun’un asası’ eseri bilinmiyor. Obje efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden som bir konum vermek mümkün değil. Senaryoda ise asanın yeri, hikâye gereği kurgusal olarak belirlenir."
   }
-  const el=document.getElementById('typing'); if(el) el.remove();
-}
-
-// === Yönetmen Modu ===
-dirToggle.onchange = ()=>{ panelEl.classList.toggle('active', dirToggle.checked); };
-
-// Örnek özel kurallar
-const DEFAULT_RULES = [
-  {match:"karun.?un?\\s+asasi|kroisos.*asa|asa.*karun", reply:
-    "Bu iki başlı kartal, Lidya devletinin simgesi sayılır. Uç kısmı çift başlı kartal formunda olan, törenlerde taşınan bir asa gibi düşün. Gövdesi metal – muhtemelen altın kaplama."},
-  {match:"(agirlik|kac kilo|kilo).*asa|asa.*(agirlik|kac kilo)", reply:
-    "Eğer som altınsa ve çapı 3–5 cm ise, uzunluğa bağlı olarak 20–30 kiloya kadar çıkabilir."},
-  {match:"giris|nereden gir|nasil gir|gir(?:i|)s|rota|plan", reply:
-    "Plan: İki giriş var. Biri Ayasofya yönünden, diğeri Topkapı Sarayı bahçesinden. Müsait olan taraftan girilecek."},
-  {match:"coz(m|)e.*katman|ikinci katman|sifre|bulmaca", reply:
-    "İkinci katmanı çözen ekipler var; Felemezler de aynı işi yaptı. Sultanahmet bağlantısı buradan geliyor."}
 ];
 
-// Yükle/Kaydet
-function loadRules(){
-  const raw = localStorage.getItem('sc_rules');
-  const list = raw ? JSON.parse(raw) : DEFAULT_RULES;
-  rulesEl.value = JSON.stringify(list, null, 2);
-}
-function saveRules(){
-  try{ localStorage.setItem('sc_rules', rulesEl.value); flash('Kurallar kaydedildi.'); }
-  catch(e){ flash('Kaydedilemedi: '+e.message,true); }
-}
-saveRulesEl.onclick = saveRules; loadRules();
-
-function getUserRules(){
-  try{ return JSON.parse(rulesEl.value).map(r=>({ re:new RegExp(r.match,'i'), reply:r.reply })); }
-  catch{ return []; }
-}
-
-// === Yerleşik Bilgi Tabanı (senaryoya göre) ===
-const KB = [
-  {keywords:["karun","kroisos","asa"], reply:
-   "Bu iki başlı kartal, Lidya devletinin simgesidir. Aşağı–yukarı böyle bir asa olabilir."},
-  {keywords:["asa","kilo","ağırlık"], reply:
-   "Eğer som altınsa ve çapı 3–5 cm ise 20–30 kiloya kadar çeker."},
-  {keywords:["giriş","ayasofya","topkapı","plan"], reply:
-   "İki giriş var: ilki Ayasofya tarafından, diğeri Topkapı Sarayı bahçesinden. Uygun olandan girilecek."},
-  {keywords:["felemez","ikinci","katman","sultan","ahmet"], reply:
-   "Felemezler de aynı şeyi yaptı; ikinci katmanı çözmüşlerdi. Sultanahmet bağlantısı buradan."}
-];
-
-function normalize(t){
-  return t.toLowerCase()
-          .replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i')
-          .replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u');
-}
-
-function score(rule, q){
-  const n = normalize(q);
-  let s = 0; for(const k of rule.keywords){ if(n.includes(k)) s += 1; }
-  return s;
-}
-
-function answerFromKB(q){
-  // Önce kullanıcı tanımlı kurallar (regex)
-  for(const {re,reply} of getUserRules()){
-    if(re.test(q)) return reply;
-  }
-  // Sonra ana KB
-  let best = {score:0, reply:null};
-  for(const r of KB){
-    const sc = score(r, q);
-    if(sc > best.score) best = {score:sc, reply:r.reply};
-  }
-  return best.reply || "Bunu netleştirmek için biraz daha açar mısın? Örn. 'asaya ait sembol' ya da 'ağırlık' gibi.";
-}
-
-// === Öntanımlı çip sorular ===
 const SUGGESTIONS = [
-  "Karun'un asası nasıl bir şey?",
-  "Ağırlığı tahminen kaç kilo olur?",
-  "Giriş nereden yapılıyor?",
-  "İkinci katman çözüldü mü?"
+  "karun nedir?",
+  "karun kimdir?",
+  "karun'un asası nasıl bir şey?",
+  "görseli var mı?",
+  "karun'un asası nerededir?"
 ];
-SUGGESTIONS.forEach(s=>{
-  const c = document.createElement('button');
-  c.className='chip'; c.textContent = s; c.onclick=()=>{textEl.value=s; send();};
-  chipsEl.appendChild(c);
-});
+SUGGESTIONS.forEach(s=>{ const c=document.createElement('button'); c.className='chip'; c.textContent=s; c.onclick=()=>{textEl.value=s; send();}; chipsEl.appendChild(c); });
 
-// === Akış ===
-function flash(msg, isErr=false){
-  hintEl.textContent = msg; hintEl.style.color = isErr? '#fecaca' : '#94a3b8';
-  setTimeout(()=>{ hintEl.textContent = 'İpucu: Örn. "Karun\'un asası nasıl bir şey?"'; hintEl.style.color = '#94a3b8'; }, 3000);
+function findAnswer(q){
+  const n = normalize(q);
+  for(const a of ANSWERS){ if(a.tests.some(re=>re.test(n))) return a.reply(); }
+  return "Bunu bu sayfada şu an yanıtlamıyorum. Şöyle sorabilirsin: ‘karun nedir?’, ‘karun kimdir?’, ‘karun'un asası nasıl bir şey?’…";
 }
 
 function send(){
-  const t = textEl.value.trim(); if(!t) return;
-  // /force kısayolu
-  if(/^\s*\/force\s+/.test(t)){
-    forceEl.value = t.replace(/^\s*\/force\s+/,'');
-    textEl.value=''; flash('Zorunlu yanıt ayarlandı.'); return;
-  }
-  bubble('me', t); textEl.value='';
-
-  typing(true);
+  const t = textEl.value.trim(); if(!t) return; me(t); textEl.value='';
   setTimeout(()=>{
-    typing(false);
-    // Yönetmen modu: force reply öncelikli
-    const force = forceEl.value.trim();
-    if(force){ bubble('bot', force); forceEl.value=''; return; }
-    const reply = answerFromKB(t);
-    bubble('bot', reply);
-  }, 450 + Math.random()*350);
+    const r = findAnswer(t);
+    if(typeof r === 'string'){ bubble('bot', r); }
+    else { const wrap=document.createElement('div'); wrap.appendChild(r); bubble('bot', wrap); }
+  }, 180);
 }
 
-sendEl.onclick = send;
-textEl.onkeydown = e=>{ if(e.key==='Enter') send(); };
-clearEl.onclick = ()=>{ chatEl.innerHTML = '<div class="chips" id="chips"></div>'; chipsEl.innerHTML=''; SUGGESTIONS.forEach(s=>{ const c=document.createElement('button'); c.className='chip'; c.textContent=s; c.onclick=()=>{textEl.value=s; send();}; chatEl.querySelector('#chips').appendChild(c); }); };
+sendEl.onclick = send; textEl.onkeydown = e=>{ if(e.key==='Enter') send(); };
 
-// Başlat mesajı
-bubble('bot', 'Selam! Senaryodaki araştırma sorularını sor, ben kısa ve net yanıt vereyim.\nİstersen Yönetmen Modu ile cevabı kilitleyebilirsin.');
+// karşılama
+bubble('bot', 'Selam! Karun hakkında sorularını yaz. Ön tanımlı sorular: karun nedir, kimdir, “karun\'un asası nasıl bir şey?”, “görseli var mı?”, “karun\'un asası nerededir?”.');
 </script>
 </body>
 </html>
