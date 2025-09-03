@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b1220">
 <title>Mini Chat — Karun Q&A (Mobil)</title>
 <style>
-  :root{--bg:#0b1220;--ink:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--bubble:#111827;--bot:#0b1220;--accent:#60a5fa;--radius:14px}
+  :root{--bg:#0b1220;--ink:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--bubble:#111827;--bot:#0b1220;--radius:14px}
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif}
   body{display:grid;grid-template-rows:1fr}
@@ -28,33 +28,24 @@
   .input input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bubble);color:var(--ink);outline:none}
   .input button{padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0f172a;color:var(--ink);cursor:pointer}
   .input button:active{transform:translateY(1px)}
-
-  .chips{display:flex;gap:8px;overflow:auto;padding-bottom:4px}
-  .chip{flex:0 0 auto;background:#e5e7eb0f;border:1px dashed #334155;color:#cbd5e1;border-radius:999px;padding:8px 12px;font-size:13px}
-  .chip:active{transform:translateY(1px)}
-
-  .hint{display:block;color:var(--muted);font-size:12px;margin-top:6px}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="head"><h1>Mini Chat — Karun Q&A</h1></div>
 
-  <div id="chat" class="chat">
-    <div class="chips" id="chips"></div>
-  </div>
+  <div id="chat" class="chat"></div>
 
   <div>
     <div class="input">
       <input id="text" type="text" placeholder="Sorunu yaz ve Enter’a bas…" autocomplete="off" inputmode="text">
       <button id="send" aria-label="Gönder">Gönder</button>
     </div>
-    <small id="hint" class="hint">İpucu: “karun nedir?”, “karun kimdir?”, “karun'un asası nasıl bir şey?”, “görseli var mı?”, “karun'un asası nerededir?”</small>
   </div>
 </div>
 
 <script>
-/* ===== Manifest: tek dosyada dinamik üret ===== */
+/* ========== Manifest'i tek dosyada üret (PWA/ana ekrana ekleme) ========== */
 (function registerManifest(){
   const iconSvg = size=> `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="#0b1220"/><circle cx="50%" cy="50%" r="${size/3}" fill="#60a5fa"/></svg>`;
   const manifest = {
@@ -76,12 +67,10 @@
   link.rel = 'manifest'; link.href = url; document.head.appendChild(link);
 })();
 
-/* ===== Yardımcılar ===== */
+/* ================== Yardımcılar ================== */
 const chatEl = document.getElementById('chat');
 const textEl = document.getElementById('text');
 const sendEl = document.getElementById('send');
-const chipsEl = document.getElementById('chips');
-const hintEl = document.getElementById('hint');
 
 function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
 function bubble(who, html){
@@ -94,10 +83,16 @@ function bubble(who, html){
 }
 function me(t){ bubble('me', esc(t)); }
 
-function normalize(t){return t.toLowerCase().trim()
-  .replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i').replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u');}
+function normalize(t){
+  try{ t = t.normalize('NFD').replace(/\p{Diacritic}/gu,''); }catch(_){}
+  return t.toLowerCase()
+          .replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i')
+          .replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u')
+          .replace(/[^a-z0-9\s]/g,' ') // noktalama vs.
+          .replace(/\s+/g,' ').trim();
+}
 
-/* ===== Görsel üreten küçük yardımcılar (inline, tek dosya) ===== */
+/* ============ Inline görseller (SVG) ============ */
 function staffSVG(){
   const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox','0 0 300 600'); svg.setAttribute('role','img');
@@ -113,20 +108,16 @@ function staffSVG(){
         <stop offset="100%" stop-color="#1f6f5b"/>
       </radialGradient>
     </defs>
-    <!-- Gövde -->
     <rect x="138" y="80" width="24" height="440" rx="12" fill="url(#g)"/>
-    <!-- Spiral bezemeler -->
     <g stroke="#3a2a0d" stroke-width="2" opacity=".35" fill="none">
       ${Array.from({length:12}).map((_,i)=>`<path d="M140 ${100+i*30} q20 8 40 0"/>`).join('')}
     </g>
-    <!-- Uç: çift başlı kartal stilize -->
     <g transform="translate(150,70)">
       <path d="M -70 0 q 30 -30 70 -30 q 40 0 70 30 q -30 30 -70 30 q -40 0 -70 -30 z" fill="url(#g)" stroke="#3a2a0d" />
       <circle cx="0" cy="0" r="10" fill="url(#gem)" stroke="#0b3330"/>
       <path d="M-35 -5 l-20 -10 l10 20 z" fill="#2a200a" opacity=".6"/>
       <path d="M35 -5 l20 -10 l-10 20 z" fill="#2a200a" opacity=".6"/>
     </g>
-    <!-- Dip kapak -->
     <ellipse cx="150" cy="520" rx="16" ry="8" fill="#6e5320"/>
   `;
   return svg;
@@ -155,73 +146,53 @@ function figureWithCaption(node, caption){
   const fc = document.createElement('figcaption'); fc.textContent = caption; fig.appendChild(fc); return fig;
 }
 
-/* ===== Bilgi tabanı ===== */
-const ANSWERS = [
-  {
-    tests:[/karun nedir/,/karun ne demek/],
-    reply: () => "Karun, Türkçede aşırı zengin kişi için kullanılan bir özel addır (\"Karun kadar zengin\"). Efsanelerdeki Karun figürü, tarihsel olarak Batı Anadolu’daki Lidya kralı Kroisos’la özdeşleştirilir."
-  },
-  {
-    tests:[/karun kimdir/,/kroisos kimdir/],
-    reply: () => "Karun diye anılan kişi, MÖ 6. yüzyılda hüküm süren Lidya kralı **Kroisos**’tur. Başkenti Sardes’tir; zenginliği, tapınaklara armağanları ve para/sikke düzenindeki rolüyle tanınır."
-  },
-  {
-    tests:[/karun.?un? asasi nasil bir sey/,/asasi nasil/],
-    reply: () => {
-      const html = document.createElement('div');
-      html.innerHTML = `<p><strong>Kısa tanım:</strong> Tarihî kayıtlarda birebir tanımlı bir asa yok; ancak <em>Karun Hazinesi</em> anlatılarından yola çıkarak tasvir edilir. 
-• <em>Malzeme</em>: altın kaplama bronz/saf altın. 
-• <em>Motif</em>: çift başlı kartal, aslan pençesi ya da yılan. 
-• <em>Boy</em>: 120–140 cm; gövde üzerinde spiral ve yazıt bezemeleri. 
-• <em>Mitolojik varyant</em>: uçta taş kakmalar (zümrüt, yakut, lapis); hafif ışıltı. 
-• <em>Ağırlık notu</em>: som altın ve 3–5 cm çap için 20–30 kg aralığı düşünülebilir.</p>`;
-      html.appendChild(figureWithCaption(staffSVG(), 'Karun’un asası — konsept eskiz (stilize)'));
-      return html;
-    }
-  },
-  {
-    tests:[/gorseli var mi/,/foto(gr|)raf/i,/resim/i],
-    reply: () => {
-      const html = document.createElement('div');
-      html.appendChild(figureWithCaption(vasePortraitSVG(), 'Karun (Kroisos) — kırmızı figür vazosu estetiğinde temsili portre'));
-      html.appendChild(document.createElement('p')).textContent = 'Not: Bu görsel temsili bir çizimdir; projede kendi dosyanızla değiştirebilirsiniz (örn. assets/karun.png).';
-      return html;
-    }
-  },
-  {
-    tests:[/karun.?un? asasi nerededir/,/asanin yeri|asa nerede/],
-    reply: () => "Doğrulanmış, tekil bir ‘Karun’un asası’ eseri bilinmiyor. Obje efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden som bir konum vermek mümkün değil. Senaryoda ise asanın yeri, hikâye gereği kurgusal olarak belirlenir."
-  }
-];
-
-const SUGGESTIONS = [
-  "karun nedir?",
-  "karun kimdir?",
-  "karun'un asası nasıl bir şey?",
-  "görseli var mı?",
-  "karun'un asası nerededir?"
-];
-SUGGESTIONS.forEach(s=>{ const c=document.createElement('button'); c.className='chip'; c.textContent=s; c.onclick=()=>{textEl.value=s; send();}; chipsEl.appendChild(c); });
-
-function findAnswer(q){
-  const n = normalize(q);
-  for(const a of ANSWERS){ if(a.tests.some(re=>re.test(n))) return a.reply(); }
-  return "Bunu bu sayfada şu an yanıtlamıyorum. Şöyle sorabilirsin: ‘karun nedir?’, ‘karun kimdir?’, ‘karun'un asası nasıl bir şey?’…";
+/* ============ Cevaplar ============ */
+function answer_karun_nedir(){
+  return "Karun, Türkçede çok zengin kişi için kullanılan bir addır (\"Karun kadar zengin\"). Efsanevi figür tarihsel olarak Lidya kralı Kroisos’la özdeşleştirilir.";
+}
+function answer_karun_kimdir(){
+  return "Karun diye anılan kişi, MÖ 6. yüzyılda Batı Anadolu’daki Lidya Krallığı’nın hükümdarı **Kroisos**’tur; başkent Sardes, ünü zenginlik ve tapınak armağanlarıyla gelir.";
+}
+function answer_asa_nasil(){
+  const html = document.createElement('div');
+  html.innerHTML = `<p><strong>Kısa tanım:</strong> Kaynaklarda birebir tanımı yok; <em>Karun Hazinesi</em> etrafındaki anlatılardan esinle betimlenir.\n• <em>Malzeme</em>: altın kaplama bronz/saf altın.\n• <em>Motif</em>: çift başlı kartal, aslan pençesi ya da yılan.\n• <em>Boy</em>: 120–140 cm; spiral ve yazıt bezemeleri.\n• <em>Mitolojik varyant</em>: uçta taş kakmalar (zümrüt, yakut, lapis).\n• <em>Ağırlık notu</em>: som altın ve 3–5 cm çap için yaklaşık 20–30 kg.</p>`;
+  html.appendChild(figureWithCaption(staffSVG(), 'Karun’un asası — konsept eskiz (temsili)'));
+  return html;
+}
+function answer_gorsel(){
+  const html = document.createElement('div');
+  html.appendChild(figureWithCaption(vasePortraitSVG(), 'Karun (Kroisos) — kırmızı figür vazosu estetiğinde temsili portre'));
+  return html;
+}
+function answer_asa_nerede(){
+  return "Doğrulanmış tekil bir ‘Karun’un asası’ eseri yoktur. Obje, efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden gerçek dünyada kesin bir konum verilemez. Senaryoda yeri kurgusaldır.";
 }
 
+/* ============ Soru eşleştirme ============ */
+function findAnswer(text){
+  const n = normalize(text);
+  if(/\b(karun|kroisos)\b.*\b(nedir|ne demek)\b/.test(n)) return answer_karun_nedir();
+  if(/\b(karun|kroisos)\b.*\b(kimdir|kim)\b/.test(n)) return answer_karun_kimdir();
+  if(/\b(asa|asasi|asanin)\b.*\b(nasil|neye benzer)\b/.test(n) || /\b(karunun)\s+(asasi).*(nasil)/.test(n)) return answer_asa_nasil();
+  if(/\b(gorsel|gorseli var mi|foto|fotograf|resim|portre)\b/.test(n)) return answer_gorsel();
+  if(/\b(asa|asasi|asanin)\b.*\b(nerede|yeri|nereye)\b/.test(n)) return answer_asa_nerede();
+  return "Bu soruyu burada kapsamıyorum. Şunları sorabilirsin: karun nedir, karun kimdir, ‘karun’un asası nasıl bir şey?’, ‘görseli var mı?’, ‘karun’un asası nerededir?’";
+}
+
+/* ============ Akış ============ */
 function send(){
   const t = textEl.value.trim(); if(!t) return; me(t); textEl.value='';
   setTimeout(()=>{
     const r = findAnswer(t);
     if(typeof r === 'string'){ bubble('bot', r); }
-    else { const wrap=document.createElement('div'); wrap.appendChild(r); bubble('bot', wrap); }
-  }, 180);
+    else { bubble('bot', r); }
+  }, 160);
 }
 
 sendEl.onclick = send; textEl.onkeydown = e=>{ if(e.key==='Enter') send(); };
 
-// karşılama
-bubble('bot', 'Selam! Karun hakkında sorularını yaz. Ön tanımlı sorular: karun nedir, kimdir, “karun\'un asası nasıl bir şey?”, “görseli var mı?”, “karun\'un asası nerededir?”.');
+// Karşılamayı kısa tut
+bubble('bot', 'Merhaba! Karun hakkında sorunuzu yazın.');
 </script>
 </body>
 </html>
