@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b1220">
-<title>Mini Chat — Karun Q&A (Mobil)</title>
+<title>Yapay Zeka</title>
 <style>
   :root{--bg:#0b1220;--ink:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--bubble:#111827;--bot:#0b1220;--radius:14px}
   *{box-sizing:border-box}
@@ -32,13 +32,13 @@
 </head>
 <body>
 <div class="app">
-  <div class="head"><h1>Mini Chat — Karun Q&A</h1></div>
+  <div class="head"><h1>Yapay Zeka</h1></div>
 
   <div id="chat" class="chat"></div>
 
   <div>
     <div class="input">
-      <input id="text" type="text" placeholder="Sorunu yaz ve Enter’a bas…" autocomplete="off" inputmode="text">
+      <input id="text" type="text" placeholder="Herhangi bir şey sor" autocomplete="off" inputmode="text">
       <button id="send" aria-label="Gönder">Gönder</button>
     </div>
   </div>
@@ -156,7 +156,6 @@ function answer_karun_kimdir(){
 function answer_asa_nasil(){
   const html = document.createElement('div');
   html.innerHTML = `<p><strong>Kısa tanım:</strong> Kaynaklarda birebir tanımı yok; <em>Karun Hazinesi</em> etrafındaki anlatılardan esinle betimlenir.\n• <em>Malzeme</em>: altın kaplama bronz/saf altın.\n• <em>Motif</em>: çift başlı kartal, aslan pençesi ya da yılan.\n• <em>Boy</em>: 120–140 cm; spiral ve yazıt bezemeleri.\n• <em>Mitolojik varyant</em>: uçta taş kakmalar (zümrüt, yakut, lapis).\n• <em>Ağırlık notu</em>: som altın ve 3–5 cm çap için yaklaşık 20–30 kg.</p>`;
-  html.appendChild(figureWithCaption(staffSVG(), 'Karun’un asası — konsept eskiz (temsili)'));
   return html;
 }
 function answer_gorsel(){
@@ -192,7 +191,7 @@ function send(){
 sendEl.onclick = send; textEl.onkeydown = e=>{ if(e.key==='Enter') send(); };
 
 // Karşılamayı kısa tut
-bubble('bot', 'Merhaba! Karun hakkında sorunuzu yazın.');
+bubble('bot', 'Merhaba! Neyi merak ediyorsun?.');
 </script>
 </body>
 </html>
