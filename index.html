@@ -159,10 +159,35 @@ function answer_asa_nasil(){
   return html;
 }
 function answer_gorsel(){
-  const html = document.createElement('div');
-  html.appendChild(figureWithCaption(vasePortraitSVG(), 'Karun (Kroisos) — kırmızı figür vazosu estetiğinde temsili portre'));
-  return html;
+  // 1) <figure> + <img> + <figcaption> oluştur
+  const fig = document.createElement('figure');
+
+  // 2) Görsel kaynağı: yerel dosya veya mutlak URL
+  const img = new Image();
+  // Örnek A: aynı repoda /assets/karun.png
+  img.src = 'assets/karun.png';
+  // Örnek B (URL): img.src = 'https://…/benim-karun-gorselim.jpg';
+
+  img.alt = 'Karun (Kroisos) portresi';
+  img.loading = 'lazy';   // mobilde performans
+  fig.appendChild(img);
+
+  const cap = document.createElement('figcaption');
+  cap.textContent = 'Karun (Kroisos) — proje görseli';
+  fig.appendChild(cap);
+
+  // 3) Yüklenemezse otomatik SVG’ye düş (mevcut temsili)
+  img.onerror = () => {
+    fig.innerHTML = '';                       // temizle
+    fig.appendChild(vasePortraitSVG());       // mevcut SVG fonksiyonun
+    const c = document.createElement('figcaption');
+    c.textContent = 'Karun — temsili (SVG)';
+    fig.appendChild(c);
+  };
+
+  return fig;
 }
+
 function answer_asa_nerede(){
   return "Doğrulanmış tekil bir ‘Karun’un asası’ eseri yoktur. Obje, efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden gerçek dünyada kesin bir konum verilemez. Senaryoda yeri kurgusaldır.";
 }
