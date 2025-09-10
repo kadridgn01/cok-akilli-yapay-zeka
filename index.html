@@ -117,26 +117,35 @@ if (window.visualViewport){
 
 /* ========== Manifest'i tek dosyada üret (PWA/ana ekrana ekleme) ========== */
 (function registerManifest(){
-  const iconSvg = size=> `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="#0b1220"/><circle cx="50%" cy="50%" r="${size/3}" fill="#60a5fa"/></svg>`;
+  const iconSvg = size => `<?xml version="1.0"?>
+  <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 64 64">
+    <rect width="64" height="64" fill="#0b1220"/>
+    <circle cx="32" cy="32" r="28" fill="#0b1220" stroke="#60a5fa" stroke-width="2"/>
+    <path d="M16 44 V20 L32 36 L48 20 V44" fill="none" stroke="#e5e7eb" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="16" cy="20" r="2" fill="#60a5fa"/>
+    <circle cx="32" cy="36" r="2" fill="#60a5fa"/>
+    <circle cx="48" cy="20" r="2" fill="#60a5fa"/>
+  </svg>`;
+
   const manifest = {
-    name: "Mini Chat — Karun Q&A",
-    short_name: "KarunChat",
+    name: "Mindora — Mini Chat",
+    short_name: "Mindora",
     start_url: ".",
     display: "standalone",
     background_color: "#0b1220",
     theme_color: "#0b1220",
     icons: [192,512].map(sz=>({
-      src: 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(iconSvg(sz)),
+      src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg(sz)),
       sizes: sz+'x'+sz,
       type: 'image/svg+xml'
     }))
   };
+
   const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
   const url = URL.createObjectURL(blob);
   const link = document.createElement('link');
   link.rel = 'manifest'; link.href = url; document.head.appendChild(link);
 })();
-
 /* ================== Yardımcılar ================== */
 const chatEl = document.getElementById('chat');
 const textEl = document.getElementById('text');
