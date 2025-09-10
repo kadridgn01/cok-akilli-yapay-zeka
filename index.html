@@ -69,10 +69,28 @@
   button#send:active{transform:translateY(1px)}
   button#send[disabled]{opacity:.6; cursor:default}
 </style>
+<style>
+  /* ... mevcut stilin altına ekle */
+  .brand {
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand .logo {
+    width:28px; height:28px; flex:0 0 28px;
+  }
+  .brand .wordmark {
+    font-size:15px; font-weight:800; letter-spacing:.2px; margin:0;
+  }
+</style>
+
 </head>
 <body>
 <div class="app">
-  <div class="head"><h1>Yapay Zeka</h1></div>
+ <div class="head">
+  <div class="brand" aria-label="Mindora">
+    <img class="logo" src="assets/mindora-logo.png" alt="Mindora logo" width="28" height="28">
+    <h1 class="wordmark">Mindora</h1>
+  </div>
+</div>
 
   <div id="chat" class="chat"></div>
 
