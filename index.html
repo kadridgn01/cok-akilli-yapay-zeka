@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b1220">
 <title>Mindora — Yapay Zekâ</title>
-
+<link rel="preload" as="image" href="./assets/mindora-logo.png">
 <style>
   :root{
     --bg:#0b1220; --ink:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
@@ -17,10 +17,7 @@
     font:16px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",sans-serif}
 
   /* ====== Shell (sidebar + içerik) ====== */
-  .shell{
-    height:calc(var(--vh) * 100);          /* px birimiyle hesaplanacak */
-    display:grid; grid-template-columns:1fr; min-height:0;
-  }
+  .shell{height:calc(var(--vh) * 100); display:grid; grid-template-columns:1fr; min-height:0;}
   @media (min-width:1024px){ .shell{grid-template-columns:var(--side-w) 1fr} }
 
   /* ====== Sidebar ====== */
@@ -31,90 +28,53 @@
     transform:translateX(-100%); transition:transform .25s ease; z-index:40;
   }
   .side[data-open="true"]{ transform:translateX(0) }
-  @media (min-width:1024px){
-    .side{ position:relative; transform:none }
-    .backdrop{ display:none!important }
-  }
+  @media (min-width:1024px){ .side{ position:relative; transform:none } .backdrop{ display:none!important } }
   .side .logoRow{display:flex;align-items:center;gap:10px;padding:8px 10px}
-  .side .logoIcon{width:24px;height:24px;display:block}
+  .logoIcon{width:24px;height:24px;display:block;object-fit:contain}
   .nav{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-  .nav a{
-    display:flex;align-items:center;gap:10px; padding:10px;
-    border-radius:12px; text-decoration:none; color:var(--ink);
-    border:1px solid transparent;
-  }
+  .nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;text-decoration:none;color:var(--ink);border:1px solid transparent}
   .nav a:hover{background:#111827; border-color:var(--line)}
   .nav a.active{background:#111827; border-color:var(--line); box-shadow:0 8px 24px rgba(0,0,0,.25)}
   .nav svg{width:18px;height:18px;stroke:#cbd5e1}
   .foot{margin-top:auto; display:flex; gap:8px; flex-wrap:wrap}
   .tag{font-size:12px;color:#cbd5e1; border:1px solid var(--line); padding:4px 8px; border-radius:999px}
 
-  /* ====== Drawer arkaplan ====== */
-  .backdrop{
-    position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px);
-    opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:30;
-  }
+  /* Drawer arkaplan */
+  .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px);
+    opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:30}
   .backdrop[data-open="true"]{ opacity:1; pointer-events:auto }
 
   /* ====== İçerik sütunu ====== */
-  .app{
-    height:100%; display:grid; grid-template-rows:auto 1fr auto; gap:10px;
-    padding:10px; overflow:hidden; min-height:0;
-  }
+  .app{height:100%; display:grid; grid-template-rows:auto 1fr auto; gap:10px; padding:10px; overflow:hidden; min-height:0;}
 
   /* ====== Üst bar ====== */
-  .head{
-    display:flex; align-items:center; gap:10px;
-    padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.03)
-  }
-  .menuBtn{
-    width:36px;height:36px;border-radius:10px;border:1px solid var(--line);
-    background:#111827; color:var(--ink); display:inline-grid;place-items:center;cursor:pointer
-  }
+  .head{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.03)}
+  .menuBtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#111827; color:var(--ink); display:inline-grid;place-items:center;cursor:pointer}
   @media (min-width:1024px){ .menuBtn{ display:none } }
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
-  .brand .logo{width:24px;height:24px;display:block}
+  .brand .logo{width:24px;height:24px;display:block;object-fit:contain}
   .brand .wordmark{font-size:15px;font-weight:800;letter-spacing:.2px;margin:0}
 
   /* ====== Sohbet alanı ====== */
-  .chat{
-    overflow:auto; padding:12px; border:1px solid var(--line);
-    border-radius:14px; background:rgba(255,255,255,.03); scroll-behavior:smooth; min-height:0;
-  }
+  .chat{overflow:auto; padding:12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.03); scroll-behavior:smooth; min-height:0;}
   .msg{display:flex; gap:8px; margin:8px 0; align-items:flex-end}
-  .msg .bubble{
-    max-width:92%; padding:12px 14px; border-radius:12px;
-    border:1px solid var(--line); box-shadow:0 8px 24px rgba(0,0,0,.25)
-  }
+  .msg .bubble{max-width:92%; padding:12px 14px; border-radius:12px; border:1px solid var(--line); box-shadow:0 8px 24px rgba(0,0,0,.25)}
   .bot .bubble{background:var(--bot)}
   .me{justify-content:flex-end}
   .me .bubble{background:var(--bubble)}
   .bubble p{margin:0; white-space:pre-wrap}
-  .bubble figure{margin:8px 0 0}
-  .bubble img,.bubble svg{
-    display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--line); background:#0a0f1a
-  }
+  .bubble img,.bubble svg{display:block; width:100%; height:auto; border-radius:10px; border:1px solid var(--line); background:#0a0f1a}
   .bubble figcaption{font-size:12px; color:var(--muted); margin-top:6px}
 
-  /* ====== Yazma alanı ====== */
+  /* ====== Composer ====== */
   .composer{position:sticky; bottom:0}
-  .bar{
-    display:grid; grid-template-columns:1fr auto; gap:8px;
-    border:1px solid var(--line); border-radius:14px; background:#0f172a; padding:8px;
-  }
-  textarea#text{
-    width:100%; resize:none; overflow:auto; border:1px solid var(--line);
-    background:var(--bubble); color:var(--ink); outline:none;
-    border-radius:12px; padding:12px; line-height:1.4; min-height:44px; max-height:32vh; font:inherit;
-  }
-  button#send{
-    min-width:92px; min-height:44px; padding:12px 14px; border-radius:12px;
-    border:1px solid var(--line); background:#111827; color:var(--ink); cursor:pointer;
-  }
+  .bar{display:grid; grid-template-columns:1fr auto; gap:8px; border:1px solid var(--line); border-radius:14px; background:#0f172a; padding:8px}
+  textarea#text{width:100%; resize:none; overflow:auto; border:1px solid var(--line); background:var(--bubble); color:var(--ink); outline:none; border-radius:12px; padding:12px; line-height:1.4; min-height:44px; max-height:32vh; font:inherit}
+  button#send{min-width:92px; min-height:44px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#111827; color:var(--ink); cursor:pointer}
   button#send:active{transform:translateY(1px)}
   button#send[disabled]{opacity:.6; cursor:default}
 
-  /* ====== Yazıyor… göstergesi ====== */
+  /* Yazıyor… */
   .typing{display:inline-flex;align-items:center;gap:6px}
   .dots{display:inline-flex;gap:2px}
   .dot{width:6px;height:6px;border-radius:50%;background:#cbd5e1;opacity:.5;animation:bounce 1s infinite ease-in-out}
@@ -122,79 +82,42 @@
   .dot:nth-child(3){animation-delay:.3s}
   @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-3px)}}
 
-  /* ====== Tablet/Desktop ====== */
-  @media (min-width:768px){
-    html,body{font-size:17px}
-    .chat{padding:16px}
-    .msg .bubble{max-width:75%}
-  }
-  @media (min-width:1024px){
-    .chat{padding:20px}
-    .msg .bubble{max-width:80%}
-    .bar{padding:10px 12px}
-    textarea#text{min-height:52px; max-height:38vh}
-    button#send{min-width:110px; min-height:48px}
-  }
+  /* Tablet/Desktop */
+  @media (min-width:768px){ html,body{font-size:17px} .chat{padding:16px} .msg .bubble{max-width:75%} }
+  @media (min-width:1024px){ .chat{padding:20px} .msg .bubble{max-width:80%} .bar{padding:10px 12px} textarea#text{min-height:52px; max-height:38vh} button#send{min-width:110px; min-height:48px} }
 </style>
 </head>
 
 <body>
-  <!-- Drawer arkaplan -->
   <div class="backdrop" id="backdrop"></div>
 
   <div class="shell">
     <!-- Sidebar -->
     <aside class="side" id="side" aria-label="Mindora menü">
       <div class="logoRow">
-        <!-- Inline logo (her zaman görünür) -->
-        <svg class="logoIcon" viewBox="0 0 64 64" role="img" aria-label="Mindora">
-          <circle cx="32" cy="32" r="28" fill="#0b1220" stroke="#60a5fa" stroke-width="2"/>
-          <path d="M16 44 V20 L32 36 L48 20 V44" fill="none" stroke="#e5e7eb" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="16" cy="20" r="2" fill="#60a5fa"/><circle cx="32" cy="36" r="2" fill="#60a5fa"/><circle cx="48" cy="20" r="2" fill="#60a5fa"/>
-        </svg>
+        <!-- PNG logo -->
+        <img class="logoIcon" data-logo src="./assets/mindora-logo.png" alt="Mindora logo" decoding="async">
         <strong>Mindora</strong>
       </div>
       <nav class="nav">
-        <a href="#" class="active" data-action="new">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M12 5v14M5 12h14"/></svg> Yeni sohbet
-        </a>
-        <a href="#" data-action="search">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Sohbetleri ara
-        </a>
-        <a href="#" data-action="library">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M4 19V7a2 2 0 0 1 2-2h12"/><path d="M8 7h12v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7"/></svg> Kitaplık
-        </a>
-        <a href="#" data-action="codex">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M3 5h12M3 12h18M3 19h12"/></svg> Codex
-        </a>
-        <a href="#" data-action="sora">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M8 5v14l11-7-11-7z"/></svg> Sora
-        </a>
-        <a href="#" data-action="gpts">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6 15.6 8.4M8.4 15.6 5.6 18.4"/></svg> GPT’ler
-        </a>
-        <a href="#" data-action="newproj">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h8l4 4v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M13 5v4h4"/></svg> Yeni proje
-        </a>
+        <a href="#" class="active" data-action="new"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M12 5v14M5 12h14"/></svg> Yeni sohbet</a>
+        <a href="#" data-action="search"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Sohbetleri ara</a>
+        <a href="#" data-action="library"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M4 19V7a2 2 0 0 1 2-2h12"/><path d="M8 7h12v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7"/></svg> Kitaplık</a>
+        <a href="#" data-action="codex"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M3 5h12M3 12h18M3 19h12"/></svg> Codex</a>
+        <a href="#" data-action="sora"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M8 5v14l11-7-11-7z"/></svg> Sora</a>
+        <a href="#" data-action="gpts"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6 15.6 8.4M8.4 15.6 5.6 18.4"/></svg> GPT’ler</a>
+        <a href="#" data-action="newproj"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h8l4 4v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M13 5v4h4"/></svg> Yeni proje</a>
       </nav>
-      <div class="foot">
-        <span class="tag">v0.1</span><span class="tag">beta</span>
-      </div>
+      <div class="foot"><span class="tag">v0.1</span><span class="tag">beta</span></div>
     </aside>
 
-    <!-- İçerik sütunu -->
+    <!-- İçerik -->
     <div class="app">
       <header class="head">
-        <button class="menuBtn" id="menuBtn" aria-label="Menüyü aç">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e5e7eb" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
+        <button class="menuBtn" id="menuBtn" aria-label="Menüyü aç"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e5e7eb" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
         <a class="brand" href="." aria-label="Mindora anasayfa">
-          <!-- Inline logo (her zaman görünür) -->
-          <svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Mindora">
-            <circle cx="32" cy="32" r="28" fill="#0b1220" stroke="#60a5fa" stroke-width="2"/>
-            <path d="M16 44 V20 L32 36 L48 20 V44" fill="none" stroke="#e5e7eb" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="16" cy="20" r="2" fill="#60a5fa"/><circle cx="32" cy="36" r="2" fill="#60a5fa"/><circle cx="48" cy="20" r="2" fill="#60a5fa"/>
-          </svg>
+          <!-- PNG logo -->
+          <img class="logo" data-logo src="./assets/mindora-logo.png" alt="Mindora logo" decoding="async">
           <h1 class="wordmark">Mindora</h1>
         </a>
       </header>
@@ -211,113 +134,88 @@
   </div>
 
 <script>
-/* ====== viewport yüksekliği (PX ile!) ====== */
+/* ====== viewport yüksekliği (PX) ====== */
 function setVH(){
   const isDesktop = matchMedia('(pointer:fine)').matches && innerWidth >= 1024;
   const h = (window.visualViewport && !isDesktop) ? visualViewport.height : innerHeight;
-  document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');  // <-- px eklendi
+  document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
 }
-setVH();
-addEventListener('resize', setVH);
-if (window.visualViewport){
-  visualViewport.addEventListener('resize', setVH);
-  visualViewport.addEventListener('scroll', setVH);
-}
+setVH(); addEventListener('resize', setVH);
+if (window.visualViewport){ visualViewport.addEventListener('resize', setVH); visualViewport.addEventListener('scroll', setVH); }
 
 /* ====== Sidebar aç/kapa ====== */
 const side = document.getElementById('side');
 const menuBtn = document.getElementById('menuBtn');
 const backdrop = document.getElementById('backdrop');
 function openSide(on){ side.setAttribute('data-open', on); backdrop.setAttribute('data-open', on); }
-menuBtn.onclick = ()=> openSide('true');
-backdrop.onclick = ()=> openSide('false');
+menuBtn.onclick = ()=> openSide('true'); backdrop.onclick = ()=> openSide('false');
 
-/* ========== Manifest'i tek dosyada üret (PWA) ========== */
+/* ====== Logo PNG yüklenmezse inline SVG fallback ====== */
+(function logoFallback(){
+  const svgFallback = (cls='')=>{
+    const ns='http://www.w3.org/2000/svg';
+    const s=document.createElementNS(ns,'svg'); s.setAttribute('viewBox','0 0 64 64'); if(cls) s.setAttribute('class',cls);
+    s.innerHTML = '<circle cx="32" cy="32" r="28" fill="#0b1220" stroke="#60a5fa" stroke-width="2"/>' +
+                  '<path d="M16 44 V20 L32 36 L48 20 V44" fill="none" stroke="#e5e7eb" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
+                  '<circle cx="16" cy="20" r="2" fill="#60a5fa"/><circle cx="32" cy="36" r="2" fill="#60a5fa"/><circle cx="48" cy="20" r="2" fill="#60a5fa"/>';
+    return s;
+  };
+  document.querySelectorAll('img[data-logo]').forEach(img=>{
+    img.addEventListener('error', ()=>{ img.replaceWith(svgFallback(img.className)); });
+  });
+})();
+
+/* ========== Manifest (PWA) ========= */
 (function registerManifest(){
   const brand = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()||'#60a5fa';
   const iconSvg = size => `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 64 64"><rect width="64" height="64" fill="#0b1220"/><circle cx="32" cy="32" r="28" fill="#0b1220" stroke="${brand}" stroke-width="2"/><path d="M16 44 V20 L32 36 L48 20 V44" fill="none" stroke="#e5e7eb" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="20" r="2" fill="${brand}"/><circle cx="32" cy="36" r="2" fill="${brand}"/><circle cx="48" cy="20" r="2" fill="${brand}"/></svg>`;
-  const manifest = {
-    name: "Mindora — Mini Chat",
-    short_name: "Mindora",
-    start_url: ".",
-    display: "standalone",
-    background_color: "#0b1220",
-    theme_color: "#0b1220",
-    icons: [192,512].map(sz=>({src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg(sz)), sizes: sz+'x'+sz, type: 'image/svg+xml'}))
-  };
+  const manifest = { name:"Mindora — Mini Chat", short_name:"Mindora", start_url:".", display:"standalone", background_color:"#0b1220", theme_color:"#0b1220",
+    icons:[192,512].map(sz=>({src:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(iconSvg(sz)), sizes:sz+'x'+sz, type:'image/svg+xml'})) };
   const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('link'); link.rel = 'manifest'; link.href = url; document.head.appendChild(link);
-  const touch = document.createElement('link'); touch.rel='apple-touch-icon'; touch.href='data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg(192)); document.head.appendChild(touch);
+  const link = document.createElement('link'); link.rel='manifest'; link.href=url; document.head.appendChild(link);
+  const touch = document.createElement('link'); touch.rel='apple-touch-icon'; touch.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(iconSvg(192)); document.head.appendChild(touch);
 })();
 
-/* ================== Yardımcılar ================== */
+/* ================== Chat yardımcıları ================== */
 const chatEl = document.getElementById('chat');
 const textEl = document.getElementById('text');
 const sendEl = document.getElementById('send');
 
 function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
 function toBottom(){ chatEl.scrollTop = chatEl.scrollHeight; }
-
 function bubble(who, html){
-  const wrap = document.createElement('div');
-  wrap.className = `msg ${who}`;
-  const b = document.createElement('div');
-  b.className = 'bubble';
+  const wrap = document.createElement('div'); wrap.className = `msg ${who}`;
+  const b = document.createElement('div'); b.className = 'bubble';
   if(typeof html === 'string') b.innerHTML = `<p>${html}</p>`; else b.appendChild(html);
-  wrap.appendChild(b); chatEl.appendChild(wrap); toBottom();
-  return b;
+  wrap.appendChild(b); chatEl.appendChild(wrap); toBottom(); return b;
 }
 function me(t){ bubble('me', esc(t)); }
 
-/* Otomatik büyüyen textarea */
-function autoGrow(){
-  textEl.style.height = 'auto';
-  const h = Math.min(textEl.scrollHeight, Math.round(window.innerHeight*0.32));
-  textEl.style.height = h + 'px';
-  toBottom();
-}
+/* Textarea auto-grow */
+function autoGrow(){ textEl.style.height='auto'; const h=Math.min(textEl.scrollHeight, Math.round(window.innerHeight*0.32)); textEl.style.height=h+'px'; toBottom(); }
 textEl.addEventListener('input', autoGrow);
 
 /* Enter = gönder, Shift+Enter = yeni satır */
-textEl.addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter' && !e.shiftKey){
-    e.preventDefault(); send();
-  }
-});
+textEl.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
 
-/* ====== Yazıyor… + yavaş yazma ====== */
-let typingWrap = null;
-function showTyping(){
-  const el = document.createElement('div');
-  el.className = 'typing';
-  el.innerHTML = `<span>Mindora yazıyor</span><span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>`;
-  typingWrap = bubble('bot', el).parentElement;
-}
+/* Yazıyor… + yavaş yazma */
+let typingWrap=null;
+function showTyping(){ const el=document.createElement('div'); el.className='typing'; el.innerHTML=`<span>Mindora yazıyor</span><span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>`; typingWrap = bubble('bot', el).parentElement; }
 function hideTyping(){ if(typingWrap){ typingWrap.remove(); typingWrap=null; } }
-
 function typeStream(text, targetBubble, cps=32, done){
-  const p = document.createElement('p'); targetBubble.innerHTML=''; targetBubble.appendChild(p);
-  let i=0;
-  (function tick(){
-    const chunk = text.slice(i, i+Math.max(1, Math.round(cps/6)));
-    p.textContent += chunk; i += chunk.length; toBottom();
-    if(i < text.length) setTimeout(tick, 1000/cps); else done && done();
-  })();
+  const p=document.createElement('p'); targetBubble.innerHTML=''; targetBubble.appendChild(p); let i=0;
+  (function tick(){ const chunk=text.slice(i, i+Math.max(1, Math.round(cps/6))); p.textContent+=chunk; i+=chunk.length; toBottom(); if(i<text.length) setTimeout(tick, 1000/cps); else done&&done(); })();
 }
 
-/* ====== Basit bilgi tabanı ====== */
-function normalize(t){
-  try{ t = t.normalize('NFD').replace(/\p{Diacritic}/gu,''); }catch(_){}
-  return t.toLowerCase().replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i')
-          .replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u')
-          .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
-}
+/* Basit bilgi tabanı */
+function normalize(t){ try{ t=t.normalize('NFD').replace(/\p{Diacritic}/gu,''); }catch(_){}
+  return t.toLowerCase().replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i').replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim(); }
 const answers = {
-  karun_nedir: "Karun, Türkçede çok zengin kişi için kullanılan bir addır (\"Karun kadar zengin\"). Efsanevi figür tarihsel olarak Lidya kralı Kroisos’la özdeşleştirilir.",
-  karun_kimdir: "Karun diye anılan kişi, MÖ 6. yüzyılda Batı Anadolu’daki Lidya Krallığı’nın hükümdarı **Kroisos**’tur; başkent Sardes, ünü zenginlik ve tapınak armağanlarıyla gelir.",
-  asa_nerede: "Doğrulanmış tekil bir ‘Karun’un asası’ eseri yoktur. Obje, efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden gerçek dünyada kesin bir konum verilemez. Senaryoda yeri kurgusaldır.",
-  fallback: "Bunu arşivimde bulamadım. İstersen konuyu aç: “Karun’un hazinesi efsanesi nedir?” gibi sorularla ilerleyebilirim."
+  karun_nedir: 'Karun, Türkçede çok zengin kişi için kullanılan bir addır ("Karun kadar zengin"). Efsanevi figür tarihsel olarak Lidya kralı Kroisos’la özdeşleştirilir.',
+  karun_kimdir: 'Karun diye anılan kişi, MÖ 6. yüzyılda Batı Anadolu’daki Lidya Krallığı’nın hükümdarı **Kroisos**’tur; başkent Sardes, ünü zenginlik ve tapınak armağanlarıyla gelir.',
+  asa_nerede: 'Doğrulanmış tekil bir ‘Karun’un asası’ eseri yoktur. Obje, efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden gerçek dünyada kesin bir konum verilemez. Senaryoda yeri kurgusaldır.',
+  fallback: 'Bunu arşivimde bulamadım. İstersen konuyu aç: “Karun’un hazinesi efsanesi nedir?” gibi sorularla ilerleyebilirim.'
 };
 function findAnswer(text){
   const n = normalize(text);
@@ -327,19 +225,18 @@ function findAnswer(text){
   return answers.fallback;
 }
 
-/* ====== Akış ====== */
+/* Akış */
 function send(){
   const t = textEl.value.trim(); if(!t) return;
   sendEl.disabled = true; me(t); textEl.value=''; autoGrow(); openSide('false');
   showTyping();
-  const thinkDelay = 400 + Math.floor(Math.random()*600);
   setTimeout(()=>{
     const ans = findAnswer(t);
     hideTyping();
-    const target = bubble('bot', '');
+    const target = bubble('bot','');
     const cps = 26 + Math.floor(Math.random()*14);
-    typeStream(ans, target, cps, ()=>{ sendEl.disabled = false; textEl.focus(); });
-  }, thinkDelay);
+    typeStream(ans, target, cps, ()=>{ sendEl.disabled=false; textEl.focus(); });
+  }, 400 + Math.floor(Math.random()*600));
 }
 document.getElementById('send').onclick = send;
 
