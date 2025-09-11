@@ -231,13 +231,15 @@ function findAnswer(text){
   if(/\b(karun|kroisos)\b.*\b(nedir|ne demek)\b/.test(n)) return answers.karun_nedir;
   if(/\b(karun|kroisos)\b.*\b(kimdir|kim)\b/.test(n)) return answers.karun_kimdir;
   if(/\b(asa|asasi|asanin)\b.*\b(nerede|yeri|nereye)\b/.test(n)) return answers.asa_nerede;
+  if(/\b(bizans|istanbul)\b.*\b(yapi|eser|kalinti|manastir|sarnic|saray)\b/.test(n))
+    return answers.bizans_yapilari;
+  if(/\b(buyuk saray|magnaura|bizans sarayi)\b/.test(n))
+    return answers.buyuk_saray;
+  if(/\b(karun)\b.*\b(asa|asasi|gorsel|resim|foto)\b/.test(n))
+    return answers.karun_asa_gorsel;
+
+  // ✅ The fallback is now at the end of the function.
   return answers.fallback;
-  if(/\b(bizans|istanbul)\b.*\b(yapi|eser|kalinti|manastir|sarnic|saray)\b/.test(n)) 
-      return answers.bizans_yapilari;
-  if(/\b(buyuk saray|magnaura|bizans sarayi)\b/.test(n)) 
-      return answers.buyuk_saray;
-  if(/\b(karun)\b.*\b(asa|asasi|gorsel|resim|foto)\b/.test(n)) 
-      return answers.karun_asa_gorsel;
 }
 
 /* Akış */
