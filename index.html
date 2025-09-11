@@ -214,7 +214,17 @@ const answers = {
   karun_nedir: 'Karun, Türkçede çok zengin kişi için kullanılan bir addır ("Karun kadar zengin"). Efsanevi figür tarihsel olarak Lidya kralı Kroisos’la özdeşleştirilir.',
   karun_kimdir: 'Karun diye anılan kişi, MÖ 6. yüzyılda Batı Anadolu’daki Lidya Krallığı’nın hükümdarı **Kroisos**’tur; başkent Sardes, ünü zenginlik ve tapınak armağanlarıyla gelir.',
   asa_nerede: 'Doğrulanmış tekil bir ‘Karun’un asası’ eseri yoktur. Obje, efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden gerçek dünyada kesin bir konum verilemez. Senaryoda yeri kurgusaldır.',
-  fallback: 'Bunu arşivimde bulamadım. İstersen konuyu aç: “Karun’un hazinesi efsanesi nedir?” gibi sorularla ilerleyebilirim.'
+  fallback: 'Bu soruna verebileceğim tek cevap; Sen aklına koyduğun her şeyi yaparsın çünkü senin inanılmaz bir sevgin ve gücün var... <3'
+  bizans_yapilari: "İstanbul’da Bizans’tan beş saray kalıntısı, sayısız sarnıç ve 10–15 kadar eski manastır kalmıştır. Çoğu sonradan camiye çevrilmiştir.",
+  buyuk_saray: "Büyük Saray (Magnaura Sarayı), Bizans imparatorlarının ana ikametgahıydı. Ana girişi Halki Kapısı’ndandı, Aya Sofya’nın güneyinde bulunuyordu. Çevresinde şehrin ana caddesi ve hipodrom vardı.",
+  karun_asa_gorsel: `
+    <figure>
+      <img src="./karun.png" alt="Karun Asası tahmini görseli">
+      <figcaption>
+        Birebir tarihi görseli bulunamadı, ama sana nasıl bir şey olabileceğini AI ile üretilmiş örnek üzerinden gösteriyorum.
+      </figcaption>
+    </figure>
+  `,
 };
 function findAnswer(text){
   const n = normalize(text);
@@ -222,6 +232,12 @@ function findAnswer(text){
   if(/\b(karun|kroisos)\b.*\b(kimdir|kim)\b/.test(n)) return answers.karun_kimdir;
   if(/\b(asa|asasi|asanin)\b.*\b(nerede|yeri|nereye)\b/.test(n)) return answers.asa_nerede;
   return answers.fallback;
+  if(/\b(bizans|istanbul)\b.*\b(yapi|eser|kalinti|manastir|sarnic|saray)\b/.test(n)) 
+      return answers.bizans_yapilari;
+  if(/\b(buyuk saray|magnaura|bizans sarayi)\b/.test(n)) 
+      return answers.buyuk_saray;
+  if(/\b(karun)\b.*\b(asa|asasi|gorsel|resim|foto)\b/.test(n)) 
+      return answers.karun_asa_gorsel;
 }
 
 /* Akış */
