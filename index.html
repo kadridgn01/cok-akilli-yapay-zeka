@@ -186,9 +186,16 @@ function toBottom(){ chatEl.scrollTop = chatEl.scrollHeight; }
 function bubble(who, html){
   const wrap = document.createElement('div'); wrap.className = `msg ${who}`;
   const b = document.createElement('div'); b.className = 'bubble';
-  if(typeof html === 'string') b.innerHTML = `<p>${html}</p>`; else b.appendChild(html);
+  if (typeof html === 'string') {
+    const s = html.trim();
+    if (s.startsWith('<')) { b.innerHTML = s; }  // HTML ise direkt bas
+    else { b.innerHTML = `<p>${s}</p>`; }        // düz metni <p> ile sar
+  } else {
+    b.appendChild(html);
+  }
   wrap.appendChild(b); chatEl.appendChild(wrap); toBottom(); return b;
 }
+
 function me(t){ bubble('me', esc(t)); }
 
 /* Textarea auto-grow */
@@ -212,33 +219,41 @@ function normalize(t){ try{ t=t.normalize('NFD').replace(/\p{Diacritic}/gu,''); 
   return t.toLowerCase().replace(/[ç]/g,'c').replace(/[ğ]/g,'g').replace(/[ı]/g,'i').replace(/[ö]/g,'o').replace(/[ş]/g,'s').replace(/[ü]/g,'u').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim(); }
 const answers = {
   karun_nedir: 'Karun, Türkçede çok zengin kişi için kullanılan bir addır ("Karun kadar zengin"). Efsanevi figür tarihsel olarak Lidya kralı Kroisos’la özdeşleştirilir.',
-  karun_kimdir: 'Karun diye anılan kişi, MÖ 6. yüzyılda Batı Anadolu’daki Lidya Krallığı’nın hükümdarı **Kroisos**’tur; başkent Sardes, ünü zenginlik ve tapınak armağanlarıyla gelir.',
+  karun_kimdir: 'Karun diye anılan kişi, MÖ 6. yüzyılda Batı Anadolu’daki Lidya Krallığı’nın hükümdarı Kroisos’tur; başkent Sardes, ünü zenginlik ve tapınak armağanlarıyla gelir.',
   asa_nerede: 'Doğrulanmış tekil bir ‘Karun’un asası’ eseri yoktur. Obje, efsanelerde ‘Karun Hazinesi’ bağlamında anılır; bu yüzden gerçek dünyada kesin bir konum verilemez. Senaryoda yeri kurgusaldır.',
-  fallback: 'Bu soruna verebileceğim tek cevap; Sen aklına koyduğun her şeyi yaparsın çünkü senin inanılmaz bir sevgin ve gücün var... <3'
-  bizans_yapilari: "İstanbul’da Bizans’tan beş saray kalıntısı, sayısız sarnıç ve 10–15 kadar eski manastır kalmıştır. Çoğu sonradan camiye çevrilmiştir.",
-  buyuk_saray: "Büyük Saray (Magnaura Sarayı), Bizans imparatorlarının ana ikametgahıydı. Ana girişi Halki Kapısı’ndandı, Aya Sofya’nın güneyinde bulunuyordu. Çevresinde şehrin ana caddesi ve hipodrom vardı.",
+
+  bizans_yapilari: 'İstanbul’da Bizans’tan beş saray kalıntısı, sayısız sarnıç ve 10–15 kadar eski manastır kalmıştır. Çoğu sonradan camiye çevrilmiştir.',
+  buyuk_saray: 'Büyük Saray (Magnaura Sarayı), Bizans imparatorlarının ana ikametgahıydı. Ana girişi Halki Kapısı’ndandı, Aya Sofya’nın güneyinde bulunuyordu. Çevresinde şehrin ana caddesi ve hipodrom vardı.',
   karun_asa_gorsel: `
     <figure>
-      <img src="./karun.png" alt="Karun Asası tahmini görseli">
-      <figcaption>
-        Birebir tarihi görseli bulunamadı, ama sana nasıl bir şey olabileceğini AI ile üretilmiş örnek üzerinden gösteriyorum.
-      </figcaption>
+      <img src="assets/karun.png" alt="Karun Asası tahmini görseli">
+      <figcaption>Birebir tarihi görseli bulunamadı, ama sana nasıl bir şey olabileceğini AI ile üretilmiş örnek üzerinden gösteriyorum.</figcaption>
     </figure>
   `,
+
+  fallback: 'Bu soruna verebileceğim tek cevap; Sen aklına koyduğun her şeyi yaparsın çünkü senin inanılmaz bir sevgin ve gücün var... <3'
 };
 function findAnswer(text){
   const n = normalize(text);
-  if(/\b(karun|kroisos)\b.*\b(nedir|ne demek)\b/.test(n)) return answers.karun_nedir;
-  if(/\b(karun|kroisos)\b.*\b(kimdir|kim)\b/.test(n)) return answers.karun_kimdir;
-  if(/\b(asa|asasi|asanin)\b.*\b(nerede|yeri|nereye)\b/.test(n)) return answers.asa_nerede;
+
   if(/\b(bizans|istanbul)\b.*\b(yapi|eser|kalinti|manastir|sarnic|saray)\b/.test(n))
     return answers.bizans_yapilari;
+
   if(/\b(buyuk saray|magnaura|bizans sarayi)\b/.test(n))
     return answers.buyuk_saray;
+
   if(/\b(karun)\b.*\b(asa|asasi|gorsel|resim|foto)\b/.test(n))
     return answers.karun_asa_gorsel;
 
-  // ✅ The fallback is now at the end of the function.
+  if(/\b(karun|kroisos)\b.*\b(nedir|ne demek)\b/.test(n))
+    return answers.karun_nedir;
+
+  if(/\b(karun|kroisos)\b.*\b(kimdir|kim)\b/.test(n))
+    return answers.karun_kimdir;
+
+  if(/\b(asa|asasi|asanin)\b.*\b(nerede|yeri|nereye)\b/.test(n))
+    return answers.asa_nerede;
+
   return answers.fallback;
 }
 
@@ -251,10 +266,19 @@ function send(){
     const ans = findAnswer(t);
     hideTyping();
     const target = bubble('bot','');
+    const isHtml = typeof ans === 'string' && ans.trim().startsWith('<');
+
+    if (isHtml) {                 // görsel/HTML cevabı
+      target.innerHTML = ans;
+      sendEl.disabled=false; textEl.focus();
+      return;
+    }
+
     const cps = 26 + Math.floor(Math.random()*14);
     typeStream(ans, target, cps, ()=>{ sendEl.disabled=false; textEl.focus(); });
   }, 400 + Math.floor(Math.random()*600));
 }
+
 document.getElementById('send').onclick = send;
 
 /* Karşılama */
